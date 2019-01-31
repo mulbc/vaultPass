@@ -56,19 +56,21 @@ async function mainLoaded() {
 
 function addCredentials(credentials, credentialName, list) {
   var item = document.createElement('li');
-  item.classList.add('mdl-list__item');
-  item.classList.add('mdl-list__item--three-line');
+  item.classList.add('list__item');
+  item.classList.add('list__item--three-line');
   item.addEventListener('click', function () {
     fillCredentialsInBrowser(credentials.username, credentials.password);
   });
   var primaryContent = document.createElement('button');
   item.appendChild(primaryContent);
-  primaryContent.classList.add('mdl-list__item-primary-content');
-  primaryContent.classList.add('mdl-button');
-  primaryContent.classList.add('mdl-js-button');
-  primaryContent.classList.add('mdl-button--raised');
-  primaryContent.classList.add('mdl-js-ripple-effect');
+  primaryContent.classList.add('list__item-primary-content');
+  primaryContent.classList.add('list__item-button');
+  primaryContent.classList.add('nobutton');
+  primaryContent.classList.add('js-button');
+  primaryContent.classList.add('js-ripple-effect');
   var titleContent = document.createElement('span');
+  titleContent.classList.add('list__item-text-title');
+  titleContent.classList.add('link');
   primaryContent.appendChild(titleContent);
   if (credentials.title) {
     titleContent.innerHTML = credentials.title;
@@ -78,8 +80,8 @@ function addCredentials(credentials, credentialName, list) {
 
   var detailContent = document.createElement('span');
   primaryContent.appendChild(detailContent);
-  detailContent.classList.add('mdl-list__item-text-body');
-  detailContent.innerHTML = `${credentials.username} - ${credentials.password}`;
+  detailContent.classList.add('list__item-text-body');
+  detailContent.innerHTML = `User: ${credentials.username}`;
   list.appendChild(item);
 }
 
