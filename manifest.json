@@ -4,9 +4,13 @@
   "description": "A Chrome extension to leverage Hashicorp Vault as Credential Storage for teams",
   "version": "1.2",
   "browser_action": {
-    "default_icon": "icon.png",
+    "default_icon": "icons/logo128.png",
     "default_popup": "popup.html",
     "default_title": "VaultPass"
+  },
+  "icons": {
+    "48": "icons/logo48.png",
+    "128": "icons/logo128.png"
   },
   "options_ui": {
     "page": "options.html"
