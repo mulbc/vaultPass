@@ -126,7 +126,7 @@ body {
   color: var(--grey);
   font-size: 1rem;
   height: 2.5rem;
-  padding: 0.75rem;
+  padding: 0 0.75rem;
   width: 100%;
 }
 
