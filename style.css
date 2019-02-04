@@ -92,7 +92,7 @@ html, body  {
 	width: 14px;
 	height: 14px;
 	margin-right: 3px;
-	background: url('/icon.svg');
+	background: url('icons/key.svg');
 	background-size: contain;
 	background-repeat: no-repeat;
 	background-position: bottom;
