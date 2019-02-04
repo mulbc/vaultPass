@@ -153,6 +153,11 @@ body {
   list-style-type: none;
 }
 
+.list__item.disabled {
+  text-decoration: line-through;
+  opacity: 0.5;
+}
+
 .list__item-button {
   border-bottom: 1px solid var(--color-border);
   padding: 10px 15px;
@@ -167,6 +172,12 @@ body {
 .list__item-button:active,
 .list__item-button:hover {
   box-shadow: var(--shadow-list-hover);
+}
+
+.list__item.disabled .list__item-button:focus,
+.list__item.disabled .list__item-button:active,
+.list__item.disabled .list__item-button:hover {
+  box-shadow: none;
 }
 
 .list__item-text-title {
@@ -218,4 +229,10 @@ a {
   text-decoration: inherit;
   opacity: 1;
   cursor: inherit;
+}
+
+/* OOCSS */
+
+.gutter {
+  margin-bottom: 1rem;
 }
