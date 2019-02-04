@@ -4,51 +4,19 @@
 <head>
   <title>Vault for Chrome</title>
   <script type="application/javascript" src="browser-polyfill.min.js"></script>
-  <link rel="stylesheet" href="material.css">
+  <link rel="stylesheet" href="style.css">
   <script src="material.js"></script>
   <script src="popup.js"></script>
-
-  <style>
-    body {
-      font-family: "Times New Roman", Times, serif;
-    }
-  </style>
 </head>
 
-<body style=" width: 300px; height: 500px;">
-  <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
-    <header class="mdl-layout__header">
-      <div class="mdl-layout__header-row">
-        <!-- Title -->
-        <span class="mdl-layout-title">VaultPass</span>
-        <!-- Add spacer, to align navigation to the right
-        <div class="mdl-layout-spacer"></div>
-        < !-- Navigation. We hide it in small screens. -- >
-        <nav class="mdl-navigation mdl-layout--large-screen-only">
-          <a class="mdl-navigation__link" href="">Link</a>
-          <a class="mdl-navigation__link" href="">Link</a>
-          <a class="mdl-navigation__link" href="">Link</a>
-          <a class="mdl-navigation__link" href="">Link</a>
-        </nav> -->
-      </div>
-    </header>
-    <!-- <div class="mdl-layout__drawer">
-      <span class="mdl-layout-title">Title</span>
-      <nav class="mdl-navigation">
-        <a class="mdl-navigation__link" href="">Link</a>
-        <a class="mdl-navigation__link" href="">Link</a>
-        <a class="mdl-navigation__link" href="">Link</a>
-        <a class="mdl-navigation__link" href="">Link</a>
-      </nav>
-    </div> -->
-    <main class="mdl-layout__content">
-      <div class="page-content">
-        <div id="notify" align="center">
-        </div>
-        <ul class="mdl-list" id="resultList"></ul>
-      </div>
-    </main>
-  </div>
+<body>
+  <header class="header">
+      <h1 class="h1 title">VaultPass</h1>
+  </header>
+  <main>
+      <div id="notify"></div>
+      <ul class="list" id="resultList"></ul>
+  </main>
 </body>
 
 </html>
