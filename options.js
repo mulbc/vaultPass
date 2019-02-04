@@ -1,5 +1,4 @@
 /* global authButtonClick browser */
-
 async function mainLoaded() {
   // get inputs from form elements, server URL, login and password
   var vaultServer = document.getElementById('serverBox');
@@ -14,7 +13,6 @@ async function mainLoaded() {
   if (username) {
     login.value = username;
     login.parentNode.classList.add('is-dirty');
-
   }
   var vaultToken = (await browser.storage.local.get('vaultToken')).vaultToken;
   if (vaultToken) {
@@ -85,7 +83,7 @@ async function displaySecrets(secrets) {
     checkbox.value = 1;
     checkbox.name = secret;
     checkbox.checked = activeSecrets.indexOf(secret) > -1;
-    checkbox.addEventListener('change', e => secretChanged({event, checkbox, item}));
+    checkbox.addEventListener('change', event => secretChanged({event, checkbox, item}));
     secondaryContent.appendChild(checkbox);
 
     // Add it to the list:
