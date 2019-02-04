@@ -75,7 +75,7 @@ async function displaySecrets(secrets) {
 
     const secondaryContent = document.createElement('span');
     secondaryContent.classList.add('list__item-text-body');
-    secondaryContent.innerText = "Active "
+    secondaryContent.innerText = 'Active ';
     label.appendChild(secondaryContent);
 
     const checkbox = document.createElement('input');
@@ -83,7 +83,7 @@ async function displaySecrets(secrets) {
     checkbox.value = 1;
     checkbox.name = secret;
     checkbox.checked = activeSecrets.indexOf(secret) > -1;
-    checkbox.addEventListener('change', event => secretChanged({event, checkbox, item}));
+    checkbox.addEventListener('change', event => secretChanged({ event, checkbox, item }));
     secondaryContent.appendChild(checkbox);
 
     // Add it to the list:
@@ -115,7 +115,7 @@ async function secretChanged({ checkbox, item }) {
     if (!fetchListOfSecretsForDir.ok) {
       checkbox.checked = false;
       checkbox.disabled = true;
-      item.classList.add("disabled");
+      item.classList.add('disabled');
       throw new Error(`ERROR accessing this field: ${await fetchListOfSecretsForDir.text()}`);
     }
     if (activeSecrets.indexOf(checkbox.name) < 0) {
