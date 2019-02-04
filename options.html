@@ -31,81 +31,49 @@
       </div>
     </header>
 
-    <div id="logout" style="display: none; text-align: center;">
-      <input
-        type="submit"
-        class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect"
-        value="Logout"
-        id="logoutButton"
-      />
-    </div>
+    <main class="main">
+      <div id="notify"></div>
 
-    <div>
-      <ul id="secretList" class="demo-list-control mdl-list"></ul>
-    </div>
+      <div id="login">
+        <label class="label">
+          Vault server URL:
+          <input type="text" class="input" name="server" id="serverBox" />
+        </label>
 
-    <div id="login" class="mdl-layout mdl-js-layout">
-      <main class="mdl-layout__content">
-        <div
-          class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label"
-        >
-          <input
-            type="text"
-            class="mdl-textfield__input"
-            name="server"
-            id="serverBox"
-          />
-          <label for="serverBox" class="mdl-textfield__label"
-            >Vault server URL:
-          </label>
-        </div>
+        <label class="label">
+          Username:
+          <input type="text" class="input" name="login" id="loginBox" />
+        </label>
 
-        <div
-          class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label"
-        >
-          <input
-            type="text"
-            class="mdl-textfield__input"
-            name="login"
-            id="loginBox"
-          />
-          <label for="loginBox" class="mdl-textfield__label">Username:</label>
-        </div>
+        <label class="label">
+          Password:
+          <input type="password" class="input" name="pass" id="passBox" />
+        </label>
 
-        <div
-          class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label"
-        >
-          <input
-            type="password"
-            class="mdl-textfield__input"
-            name="pass"
-            id="passBox"
-          />
-          <label for="passBox" class="mdl-textfield__label">Password:</label>
-        </div>
-
-        <div
-          class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label"
-        >
-          <label for="authMount">Auth Mountpoint:</label>
-          <select name="authMount" id="authMount">
+        <label class="label">
+          Auth Mountpoint:
+          <select name="authMount" id="authMount" class="input">
             <option value="ldap">ldap</option>
             <option value="userpass">userpass</option>
           </select>
-        </div>
+        </label>
 
-        <div style="text-align: center;">
-          <input
-            type="submit"
-            class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect"
-            value="Login to Vault"
-            id="authButton"
-          />
-        </div>
-      </main>
-    </div>
+        <input
+          type="submit"
+          class="button button--primary"
+          value="Login to Vault"
+          id="authButton"
+        />
+      </div>
 
-    <div id="notify"></div>
+      <div id="logout" style="display: none; text-align: center;">
+        <input type="submit" class="button" value="Logout" id="logoutButton" />
+      </div>
+
+      <div>
+        <ul id="secretList"></ul>
+      </div>
+    </main>
 
     <script src="options.js"></script>
   </body>
