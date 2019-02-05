@@ -4,18 +4,47 @@ class Notify {
     this.messages = [];
   }
 
+  /**
+   * @param {String} message will be parsed to HTML
+   * @param {Object} options 
+   * @param {Boolean} [options.removeOption] wether or not to show the ✖
+   * @param {Number} [options.time] when declared, notification will disappear after Xms
+   * @returns this
+   */
   error(message, options) {
     return this.message({ level: 'error', message, ...options });
   }
 
+  /**
+   * @param {String} message will be parsed to HTML
+   * @param {Object} options 
+   * @param {Boolean} [options.removeOption] wether or not to show the ✖
+   * @param {Number} [options.time] when declared, notification will disappear after Xms
+   * @returns this
+   */
   success(message, options) {
     return this.message({ level: 'success', message, ...options });
   }
 
+  /**
+   * @param {String} message will be parsed to HTML
+   * @param {Object} options 
+   * @param {Boolean} [options.removeOption] wether or not to show the ✖
+   * @param {Number} [options.time] when declared, notification will disappear after Xms
+   * @returns this
+   */
   info(message, options) {
     return this.message({ level: 'info', message, ...options });
   }
 
+  /**
+   * @param {Object} options 
+   * @param {String} options.message will be parsed to HTML
+   * @param {String} [options.level] info|error|success
+   * @param {Boolean} [options.removeOption] wether or not to show the ✖
+   * @param {Number} [options.time] when declared, notification will disappear after Xms
+   * @returns this
+   */
   message({ level = 'info', message, time, removeOption = true }) {
     const messageNode = document.createElement('div');
     messageNode.classList.add('notify', `notify--${level}`);
@@ -28,6 +57,10 @@ class Notify {
     return this;
   }
 
+  /**
+   * clears the node from all messages
+   * @returns this
+   */
   clear() {
     this.node.innerHTML = '';
     this.messages = [];
