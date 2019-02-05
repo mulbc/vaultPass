@@ -154,6 +154,10 @@ body {
   list-style-type: none;
 }
 
+.list__item {
+  position: relative;
+}
+
 .list__item.disabled {
   text-decoration: line-through;
   opacity: 0.5;
@@ -203,6 +207,18 @@ body {
   color: var(--grey);
 }
 
+.list__item-actions {
+  position: absolute;
+  bottom: 0;
+  right: 5px;
+}
+
+.list__item-actions .button {
+  margin: 10px 5px;
+  padding: 5px;
+  height: auto;
+}
+
 /* Links */
 
 a {
@@ -230,6 +246,18 @@ a {
   text-decoration: inherit;
   opacity: 1;
   cursor: inherit;
+}
+
+/* Icons */
+
+.icon {
+  width: 20px;
+  height: 20px;
+}
+
+.icon--inline {
+  display: inline-block;
+  vertical-align: middle;
 }
 
 /* OOCSS */

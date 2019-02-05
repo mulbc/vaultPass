@@ -15,14 +15,16 @@ async function mainLoaded() {
 
   var vaultToken = (await browser.storage.local.get('vaultToken')).vaultToken;
   if (!vaultToken || vaultToken.length === 0) {
-    let message = 'No Vault-Token information available\nPlease use the options page to login';
+    let message =
+      'No Vault-Token information available\nPlease use the options page to login';
     var notify = document.getElementById('notify');
     notify.innerText = message;
     notify.style = 'color: red;';
     return;
   }
 
-  var vaultServerAdress = (await browser.storage.sync.get('vaultAddress')).vaultAddress;
+  var vaultServerAdress = (await browser.storage.sync.get('vaultAddress'))
+    .vaultAddress;
 
   var secretList = (await browser.storage.sync.get('secrets')).secrets;
   if (!secretList) {
@@ -32,56 +34,85 @@ async function mainLoaded() {
 
   var promises = [];
   for (const secret of secretList) {
-    promises.push((async function () {
-      var secretsInPath = await fetch(`${vaultServerAdress}/v1/secret/metadata/vaultPass/${secret}`, {
-        method: 'LIST',
-        headers: {
-          'X-Vault-Token': vaultToken,
-          'Content-Type': 'application/json'
-        },
-      });
-      for (const element of (await secretsInPath.json()).data.keys) {
-        var pattern = new RegExp(element);
-        var patternMatches = pattern.test(currentUrl);
-        if (patternMatches) {
-          const urlPath = `${vaultServerAdress}/v1/secret/data/vaultPass/${secret}${element}`;
-          const credentials = await getCredentials(urlPath);
-          addCredentials(credentials.data.data, element, resultList);
+    promises.push(
+      (async function() {
+        var secretsInPath = await fetch(
+          `${vaultServerAdress}/v1/secret/metadata/vaultPass/${secret}`,
+          {
+            method: 'LIST',
+            headers: {
+              'X-Vault-Token': vaultToken,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+        for (const element of (await secretsInPath.json()).data.keys) {
+          var pattern = new RegExp(element);
+          var patternMatches = pattern.test(currentUrl);
+          if (patternMatches) {
+            const urlPath = `${vaultServerAdress}/v1/secret/data/vaultPass/${secret}${element}`;
+            const credentials = await getCredentials(urlPath);
+            addCredentials(credentials.data.data, element, resultList);
+          }
         }
-      }
-    })());
+      })()
+    );
   }
   await Promise.all(promises);
 }
 
 function addCredentials(credentials, credentialName, list) {
-  var item = document.createElement('li');
-  item.classList.add('list__item');
-  item.classList.add('list__item--three-line');
-  item.addEventListener('click', function () {
+  const item = document.createElement('li');
+  item.classList.add('list__item', 'list__item--three-line');
+  item.addEventListener('click', function() {
     fillCredentialsInBrowser(credentials.username, credentials.password);
   });
-  var primaryContent = document.createElement('button');
-  item.appendChild(primaryContent);
-  primaryContent.classList.add('list__item-primary-content');
-  primaryContent.classList.add('list__item-button');
-  primaryContent.classList.add('nobutton');
-  primaryContent.classList.add('js-button');
-  primaryContent.classList.add('js-ripple-effect');
-  var titleContent = document.createElement('span');
-  titleContent.classList.add('list__item-text-title');
-  titleContent.classList.add('link');
-  primaryContent.appendChild(titleContent);
-  if (credentials.title) {
-    titleContent.innerHTML = credentials.title;
-  } else {
-    titleContent.innerHTML = credentialName;
-  }
 
-  var detailContent = document.createElement('span');
-  primaryContent.appendChild(detailContent);
+  const primaryContent = document.createElement('button');
+  primaryContent.title = 'insert credentials';
+  primaryContent.classList.add(
+    'list__item-primary-content',
+    'list__item-button',
+    'nobutton',
+    'js-button',
+    'js-ripple-effect'
+  );
+  item.appendChild(primaryContent);
+
+  const titleContent = document.createElement('span');
+  titleContent.classList.add('list__item-text-title', 'link');
+  titleContent.innerHTML = credentials.title || credentialName;
+  primaryContent.appendChild(titleContent);
+
+  const detailContent = document.createElement('span');
   detailContent.classList.add('list__item-text-body');
   detailContent.innerHTML = `User: ${credentials.username}`;
+  primaryContent.appendChild(detailContent);
+
+  const actions = document.createElement('div');
+  actions.classList.add('list__item-actions');
+  item.appendChild(actions);
+
+  const copyUsernameButton = document.createElement('button');
+  copyUsernameButton.classList.add('button');
+  copyUsernameButton.title = 'copy username to clipboard';
+  copyUsernameButton.innerHTML = `
+    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon--inline">
+      <use href="icons/copy-user.svg#copy-user"/>
+    </svg>
+  `;
+  actions.appendChild(copyUsernameButton);
+
+  const copyPasswordButton = document.createElement('button');
+  copyPasswordButton.classList.add('button');
+  copyPasswordButton.title = 'copy password to clipboard';
+  copyPasswordButton.innerHTML = `
+    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon--inline">
+      <use href="icons/copy-key.svg#copy-key"/>
+    </svg>
+  `;
+  actions.appendChild(copyPasswordButton);
+
   list.appendChild(item);
 }
 
@@ -91,7 +122,7 @@ async function getCredentials(urlPath) {
     headers: {
       'X-Vault-Token': vaultToken,
       'Content-Type': 'application/json'
-    },
+    }
   });
   if (!result.ok) {
     throw new Error(`getCredentials: ${await result.text}`);
@@ -106,7 +137,11 @@ async function fillCredentialsInBrowser(username, password) {
     if (tab.url) {
       // tabs.sendMessage(integer tabId, any message, optional object options, optional function responseCallback)
 
-      browser.tabs.sendMessage(tab.id, { message: 'fill_creds', username: username, password: password });
+      browser.tabs.sendMessage(tab.id, {
+        message: 'fill_creds',
+        username: username,
+        password: password
+      });
       break;
     }
   }
