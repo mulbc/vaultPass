@@ -1,5 +1,6 @@
 /* global browser */
 
+const notify = new Notify(document.querySelector('#notify'));
 async function mainLoaded() {
   var resultList = document.getElementById('resultList');
   var currentUrl;
@@ -15,14 +16,15 @@ async function mainLoaded() {
 
   var vaultToken = (await browser.storage.local.get('vaultToken')).vaultToken;
   if (!vaultToken || vaultToken.length === 0) {
-    let message = 'No Vault-Token information available\nPlease use the options page to login';
-    var notify = document.getElementById('notify');
-    notify.innerText = message;
-    notify.style = 'color: red;';
-    return;
+    return notify.info(
+      `No Vault-Token information available.<br>
+      Please use the <a href="/options.html" class="link">options page</a> to login.`,
+      { removeOption: false }
+    );
   }
 
-  var vaultServerAdress = (await browser.storage.sync.get('vaultAddress')).vaultAddress;
+  var vaultServerAdress = (await browser.storage.sync.get('vaultAddress'))
+    .vaultAddress;
 
   var secretList = (await browser.storage.sync.get('secrets')).secrets;
   if (!secretList) {
@@ -40,16 +42,16 @@ async function mainLoaded() {
           'Content-Type': 'application/json'
         },
       });
-      for (const element of (await secretsInPath.json()).data.keys) {
-        var pattern = new RegExp(element);
-        var patternMatches = pattern.test(currentUrl);
-        if (patternMatches) {
-          const urlPath = `${vaultServerAdress}/v1/secret/data/vaultPass/${secret}${element}`;
-          const credentials = await getCredentials(urlPath);
-          addCredentials(credentials.data.data, element, resultList);
+        for (const element of (await secretsInPath.json()).data.keys) {
+          var pattern = new RegExp(element);
+          var patternMatches = pattern.test(currentUrl);
+          if (patternMatches) {
+            const urlPath = `${vaultServerAdress}/v1/secret/data/vaultPass/${secret}${element}`;
+            const credentials = await getCredentials(urlPath);
+            addCredentials(credentials.data.data, element, resultList);
+          }
         }
-      }
-    })());
+      })());
   }
   await Promise.all(promises);
 }

@@ -1,4 +1,6 @@
 /* global authButtonClick browser */
+
+const notify = new Notify(document.querySelector('#notify'));
 async function mainLoaded() {
   // get inputs from form elements, server URL, login and password
   var vaultServer = document.getElementById('serverBox');
@@ -28,7 +30,7 @@ async function querySecrets(vaultServerAdress, vaultToken) {
   // Hide login prompt if we already have a Token
   document.getElementById('login').style.display = 'none';
   document.getElementById('logout').style.display = 'block';
-  var notify = document.getElementById('notify');
+  notify.clear();
 
   var fetchListOfSecretDirs = await fetch(`${vaultServerAdress}/v1/secret/metadata/vaultPass`, {
     method: 'LIST',
@@ -38,7 +40,9 @@ async function querySecrets(vaultServerAdress, vaultToken) {
     },
   });
   if (!fetchListOfSecretDirs.ok) {
-    notify.textContent = `Fetching list of secret directories failed: ${await fetchListOfSecretDirs.text()}`;
+    notify.error(
+      `Fetching list of secret directories failed: ${await fetchListOfSecretDirs.text()}`
+    );
     throw new Error(`Fetching list of secret directories failed: ${await fetchListOfSecretDirs.text()}`);
   }
   displaySecrets((await fetchListOfSecretDirs.json()).data.keys);
@@ -48,8 +52,8 @@ async function logout() {
   document.getElementById('login').style.display = 'block';
   document.getElementById('logout').style.display = 'none';
   document.getElementById('secretList').innerHTML = '';
-  document.getElementById('notify').innerHTML = '';
-  await browser.storage.local.set({ 'vaultToken': null });
+  notify.clear().success('logged out', { time: 1000, removeOption: false });
+  await browser.storage.local.set({ vaultToken: null });
 }
 
 async function displaySecrets(secrets) {
@@ -141,6 +145,11 @@ async function authToVault(vaultServer, username, password, authMount) {
     body: JSON.stringify({ 'password': password }),
   });
   if (!loginToVault.ok) {
+    notify.error(`
+      There was an error while calling<br>
+      ${vaultServer}/v1/auth/${authMount}/login/${username}<br>
+      Please check if your username, password and mountpoints are correct.
+    `);
     new Error(`authToVault: ${await loginToVault.text}`);
   }
   const token = (await loginToVault.json()).auth.client_token;
@@ -151,7 +160,6 @@ async function authToVault(vaultServer, username, password, authMount) {
 }
 
 async function authButtonClick() {
-  var notify = document.getElementById('notify');
   // get inputs from form elements, server URL, login and password
   var vaultServer = document.getElementById('serverBox');
   var login = document.getElementById('loginBox');
@@ -164,7 +172,7 @@ async function authButtonClick() {
     await browser.storage.sync.set({ 'username': login.value });
     authToVault(vaultServer.value, login.value, pass.value, authMount.value);
   } else {
-    notify.textContent = 'Bad input, must fill in all 3 fields.';
+    notify.error('Bad input, must fill in all 3 fields.');
   }
 }
 

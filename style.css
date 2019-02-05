@@ -5,11 +5,52 @@
   --grey-light: #bac1cc;
   --grey-subtle: #f7f8fa;
 
+  --red: #dc3545;
+  --red-alt: #8f1420;
+  --green: #28a745;
+  --green-alt: #0d5a1e;
+
   --color-border: var(--grey-light);
   --gradient-blue: linear-gradient(90deg, var(--blue), var(--blue-alt));
   --shadow-list-hover: 0 2px 0 -1px var(--grey-light),
     0 -2px 0 -1px var(--grey-light), 0 0 0 1px var(--grey-light),
     0 8px 4px -4px rgba(10, 10, 10, 0.1), 0 6px 8px -2px rgba(10, 10, 10, 0.05);
+}
+
+/* Buttons */
+
+.button {
+  background-color: var(--grey-subtle);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 5px 1px -2px rgba(10, 10, 10, 0.12);
+  cursor: pointer;
+  font-weight: 600;
+  padding: 0 0.8rem;
+  transition: box-shadow 150ms ease-in-out, transform 150ms ease-in-out;
+  height: 40px;
+}
+
+.button:focus,
+.button:hover {
+  box-shadow: 0 7px 3px -2px rgba(0, 0, 0, 0.1);
+  text-decoration: underline;
+  transform: translateY(-1px);
+}
+
+.button:active {
+  box-shadow: none;
+  transform: translateY(1px);
+}
+
+.button--primary {
+  background-color: var(--blue);
+  border-color: var(--blue-alt);
+  color: white;
+}
+
+.nobutton {
+  all: unset;
+  font-size: 1rem;
 }
 
 /* Layout */
@@ -72,40 +113,42 @@ body {
   margin: 5px;
 }
 
-/* Buttons */
+/* Notifier */
 
-.button {
-  background-color: var(--grey-subtle);
-  border: 1px solid var(--color-border);
-  box-shadow: 0 5px 1px -2px rgba(10, 10, 10, 0.12);
-  cursor: pointer;
-  font-weight: 600;
-  padding: 0 0.8rem;
-  transition: box-shadow 150ms ease-in-out, transform 150ms ease-in-out;
-  height: 40px;
-}
-
-.button:focus,
-.button:hover {
-  box-shadow: 0 7px 3px -2px rgba(0, 0, 0, 0.1);
-  text-decoration: underline;
-  transform: translateY(-1px);
-}
-
-.button:active {
-  box-shadow: none;
-  transform: translateY(1px);
-}
-
-.button--primary {
-  background-color: var(--blue);
-  border-color: var(--blue-alt);
+.notify {
   color: white;
+  margin-bottom: 10px;
+  padding: 10px;
+  position: relative;
 }
 
-.nobutton {
-  all: unset;
-  font-size: 1rem;
+.notify__button {
+  position: absolute;
+  top: 5px;
+  right: 7px;
+  opacity: 0.5;
+  transition: opacity 250ms ease-in-out;
+}
+
+.notify__button:hover,
+.notify__button:focus,
+.notify__button:active {
+  opacity: 1;
+}
+
+.notify--error {
+  background: var(--red);
+  border-left: 5px solid var(--red-alt);
+}
+
+.notify--success {
+  background: var(--green);
+  border-left: 5px solid var(--green-alt);
+}
+
+.notify--info {
+  background: var(--blue);
+  border-left: 5px solid var(--blue-alt);
 }
 
 /* Form Fields */
