@@ -16,7 +16,7 @@ async function mainLoaded() {
 
   var vaultToken = (await browser.storage.local.get('vaultToken')).vaultToken;
   if (!vaultToken || vaultToken.length === 0) {
-    return notify.info(
+    return notify.clear().info(
       `No Vault-Token information available.<br>
       Please use the <a href="/options.html" class="link">options page</a> to login.`,
       { removeOption: false }
@@ -42,6 +42,7 @@ async function mainLoaded() {
           'Content-Type': 'application/json'
         },
       });
+        let anyMatch = false;
         for (const element of (await secretsInPath.json()).data.keys) {
           var pattern = new RegExp(element);
           var patternMatches = pattern.test(currentUrl);
@@ -49,7 +50,15 @@ async function mainLoaded() {
             const urlPath = `${vaultServerAdress}/v1/secret/data/vaultPass/${secret}${element}`;
             const credentials = await getCredentials(urlPath);
             addCredentials(credentials.data.data, element, resultList);
+            anyMatch = true;
+            notify.clear();
           }
+        }
+        if(!anyMatch) {
+          notify.info(
+            `No matching key found for this page.`,
+            { removeOption: false }
+          );
         }
       })());
   }
