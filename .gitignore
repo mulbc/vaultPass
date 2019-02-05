@@ -1,4 +1,5 @@
 node_modules/
 *.crx
-*.png
 *.zip
+
+.DS_Store
