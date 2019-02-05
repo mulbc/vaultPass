@@ -12,9 +12,6 @@
     "48": "icons/logo48.png",
     "128": "icons/logo128.png"
   },
-  "options_ui": {
-    "page": "options.html"
-  },
   "content_security_policy": "script-src 'self'; object-src 'self'",
   "content_scripts": [
     {

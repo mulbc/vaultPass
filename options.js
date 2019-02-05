@@ -1,5 +1,4 @@
 /* global authButtonClick browser */
-
 async function mainLoaded() {
   // get inputs from form elements, server URL, login and password
   var vaultServer = document.getElementById('serverBox');
@@ -14,7 +13,6 @@ async function mainLoaded() {
   if (username) {
     login.value = username;
     login.parentNode.classList.add('is-dirty');
-
   }
   var vaultToken = (await browser.storage.local.get('vaultToken')).vaultToken;
   if (vaultToken) {
@@ -63,29 +61,30 @@ async function displaySecrets(secrets) {
 
   for (const secret of secrets) {
     // Create the list item:
-    var item = document.createElement('li');
-    item.classList.add('mdl-list__item');
+    const item = document.createElement('li');
+    item.classList.add('list__item');
 
-    var primaryContent = document.createElement('span');
-    primaryContent.classList.add('mdl-list__item-primary-content');
-    item.appendChild(primaryContent);
+    const label = document.createElement('label');
+    label.classList.add('list__item-button');
+    item.appendChild(label);
+
+    const primaryContent = document.createElement('span');
+    primaryContent.classList.add('list__item-text-title');
+    label.appendChild(primaryContent);
     primaryContent.innerText = secret;
 
-    var secondaryContent = document.createElement('span');
-    secondaryContent.classList.add('mdl-list__item-secondary-action');
-    item.appendChild(secondaryContent);
-
-    var checkboxlabel = document.createElement('span');
-    checkboxlabel.classList.add('mdl-list__item-secondary-action');
-    secondaryContent.appendChild(checkboxlabel);
+    const secondaryContent = document.createElement('span');
+    secondaryContent.classList.add('list__item-text-body');
+    secondaryContent.innerText = "Active "
+    label.appendChild(secondaryContent);
 
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
     checkbox.value = 1;
     checkbox.name = secret;
     checkbox.checked = activeSecrets.indexOf(secret) > -1;
-    checkbox.addEventListener('change', secretChanged);
-    checkboxlabel.appendChild(checkbox);
+    checkbox.addEventListener('change', event => secretChanged({event, checkbox, item}));
+    secondaryContent.appendChild(checkbox);
 
     // Add it to the list:
     list.appendChild(item);
@@ -93,14 +92,13 @@ async function displaySecrets(secrets) {
 
 }
 
-async function secretChanged() {
-  var checkbox = this;
+async function secretChanged({ checkbox, item }) {
   var activeSecrets = (await browser.storage.sync.get('secrets')).secrets;
   if (!activeSecrets) {
     activeSecrets = [];
   }
 
-  if (this.checked) {
+  if (checkbox.checked) {
     var vaultServerAdress = (await browser.storage.sync.get('vaultAddress')).vaultAddress;
     var vaultToken = (await browser.storage.local.get('vaultToken')).vaultToken;
     if (!vaultToken) {
@@ -117,7 +115,7 @@ async function secretChanged() {
     if (!fetchListOfSecretsForDir.ok) {
       checkbox.checked = false;
       checkbox.disabled = true;
-      checkbox.parentElement.parentElement.parentElement.style = 'text-decoration:line-through; color: red;';
+      item.classList.add("disabled");
       throw new Error(`ERROR accessing this field: ${await fetchListOfSecretsForDir.text()}`);
     }
     if (activeSecrets.indexOf(checkbox.name) < 0) {

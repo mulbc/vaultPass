@@ -15,6 +15,5 @@ repos:
     - id: eslint
       exclude: >
               (?x)^(
-                  material.js|
                   browser-polyfill.min.js
               )$

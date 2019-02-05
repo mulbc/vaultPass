@@ -1,74 +1,80 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Vault for Chrome: Settings</title>
+    <script
+      type="application/javascript"
+      src="browser-polyfill.min.js"
+    ></script>
+    <link rel="stylesheet" href="style.css" />
+  </head>
 
-<head>
-  <meta charset="utf-8" />
+  <body>
+    <header class="header">
+      <div class="header__container">
+        <h1 class="h1 title">VaultPass</h1>
+        <nav role="navigation" class="menu" aria-label="Main Menu">
+          <ul class="menu__links">
+            <li>
+              <a href="/popup.html" class="link link--alt" aria-current="page"
+                >Keys
+              </a>
+            </li>
+            <li>
+              <a href="/options.html" class="link link--alt link--current"
+                >Options</a
+              >
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </header>
 
-  <title>Vault for Chrome: Settings</title>
-  <script type="application/javascript" src="browser-polyfill.min.js"></script>
+    <main class="main">
+      <div id="notify"></div>
 
-  <link rel="stylesheet" href="material.css">
-  <script src="material.js"></script>
-  <style>
-    body {
-      font-family: "Times New Roman", Times, serif;
-    }
+      <div id="login">
+        <label class="label">
+          Vault server URL:
+          <input type="text" class="input" name="server" id="serverBox" />
+        </label>
 
-    .demo-list-control {
-      width: 300px;
-    }
+        <label class="label">
+          Username:
+          <input type="text" class="input" name="login" id="loginBox" />
+        </label>
 
-    .demo-list-radio {
-      display: inline;
-    }
-  </style>
-</head>
+        <label class="label">
+          Password:
+          <input type="password" class="input" name="pass" id="passBox" />
+        </label>
 
-<body>
-  <div id="logout" style="display: none; text-align: center;">
-    <input type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" value="Logout" id="logoutButton" />
-  </div>
+        <label class="label">
+          Auth Mountpoint:
+          <select name="authMount" id="authMount" class="input">
+            <option value="ldap">ldap</option>
+            <option value="userpass">userpass</option>
+          </select>
+        </label>
 
-  <div>
-    <ul id="secretList" class="demo-list-control mdl-list">
-    </ul>
-  </div>
-
-  <div id="login" class="mdl-layout mdl-js-layout">
-    <main class="mdl-layout__content">
-      <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-        <input type="text" class="mdl-textfield__input" name="server" id="serverBox" />
-        <label for="serverBox" class="mdl-textfield__label">Vault server URL: </label>
+        <input
+          type="submit"
+          class="button button--primary"
+          value="Login to Vault"
+          id="authButton"
+        />
       </div>
 
-      <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-        <input type="text" class="mdl-textfield__input" name="login" id="loginBox" />
-        <label for="loginBox" class="mdl-textfield__label">Username:</label>
+      <div>
+        <ul id="secretList" class="list gutter"></ul>
       </div>
 
-      <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-        <input type="password" class="mdl-textfield__input" name="pass" id="passBox" />
-        <label for="passBox" class="mdl-textfield__label">Password:</label>
-      </div>
-
-      <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-        <label for="authMount">Auth Mountpoint:</label>
-        <select name="authMount" id="authMount">
-          <option value="ldap">ldap</option>
-          <option value="userpass">userpass</option>
-        </select>
-      </div>
-
-      <div style="text-align: center;">
-        <input type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" value="Login to Vault"
-          id="authButton" />
+      <div id="logout" style="display: none;">
+        <input type="submit" class="button" value="Logout" id="logoutButton" />
       </div>
     </main>
-  </div>
 
-  <div id="notify"></div>
-
-  <script src="options.js"></script>
-</body>
-
+    <script src="options.js"></script>
+  </body>
 </html>
