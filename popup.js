@@ -1,4 +1,4 @@
-/* global browser */
+/* global browser Notify */
 
 const notify = new Notify(document.querySelector('#notify'));
 async function mainLoaded() {
@@ -42,25 +42,25 @@ async function mainLoaded() {
           'Content-Type': 'application/json'
         },
       });
-        let anyMatch = false;
-        for (const element of (await secretsInPath.json()).data.keys) {
-          var pattern = new RegExp(element);
-          var patternMatches = pattern.test(currentUrl);
-          if (patternMatches) {
-            const urlPath = `${vaultServerAdress}/v1/secret/data/vaultPass/${secret}${element}`;
-            const credentials = await getCredentials(urlPath);
-            addCredentials(credentials.data.data, element, resultList);
-            anyMatch = true;
-            notify.clear();
-          }
+      let anyMatch = false;
+      for (const element of (await secretsInPath.json()).data.keys) {
+        var pattern = new RegExp(element);
+        var patternMatches = pattern.test(currentUrl);
+        if (patternMatches) {
+          const urlPath = `${vaultServerAdress}/v1/secret/data/vaultPass/${secret}${element}`;
+          const credentials = await getCredentials(urlPath);
+          addCredentials(credentials.data.data, element, resultList);
+          anyMatch = true;
+          notify.clear();
         }
-        if(!anyMatch) {
-          notify.info(
-            `No matching key found for this page.`,
-            { removeOption: false }
-          );
-        }
-      })());
+      }
+      if (!anyMatch) {
+        notify.info(
+          'No matching key found for this page.',
+          { removeOption: false }
+        );
+      }
+    })());
   }
   await Promise.all(promises);
 }
@@ -85,12 +85,12 @@ function addCredentials(credentials, credentialName, list) {
 
   const titleContent = document.createElement('span');
   titleContent.classList.add('list__item-text-title', 'link');
-  titleContent.innerHTML = credentials.title || credentialName;
+  titleContent.textContent = credentials.title || credentialName;
   primaryContent.appendChild(titleContent);
 
   const detailContent = document.createElement('span');
   detailContent.classList.add('list__item-text-body');
-  detailContent.innerHTML = `User: ${credentials.username}`;
+  detailContent.textContent = `User: ${credentials.username}`;
   primaryContent.appendChild(detailContent);
 
   const actions = document.createElement('div');
