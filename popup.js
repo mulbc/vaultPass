@@ -64,9 +64,6 @@ async function mainLoaded() {
 function addCredentials(credentials, credentialName, list) {
   const item = document.createElement('li');
   item.classList.add('list__item', 'list__item--three-line');
-  item.addEventListener('click', function() {
-    fillCredentialsInBrowser(credentials.username, credentials.password);
-  });
 
   const primaryContent = document.createElement('button');
   primaryContent.title = 'insert credentials';
@@ -77,6 +74,9 @@ function addCredentials(credentials, credentialName, list) {
     'js-button',
     'js-ripple-effect'
   );
+  primaryContent.addEventListener('click', function () {
+    fillCredentialsInBrowser(credentials.username, credentials.password);
+  });
   item.appendChild(primaryContent);
 
   const titleContent = document.createElement('span');
