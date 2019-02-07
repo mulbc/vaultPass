@@ -105,6 +105,9 @@ function addCredentials(credentials, credentialName, list) {
       <use href="icons/copy-user.svg#copy-user"/>
     </svg>
   `;
+  copyUsernameButton.addEventListener('click', function () {
+    copyStringToClipboard(credentials.username);
+  });
   actions.appendChild(copyUsernameButton);
 
   const copyPasswordButton = document.createElement('button');
@@ -115,6 +118,9 @@ function addCredentials(credentials, credentialName, list) {
       <use href="icons/copy-key.svg#copy-key"/>
     </svg>
   `;
+  copyPasswordButton.addEventListener('click', function () {
+    copyStringToClipboard(credentials.password);
+  });
   actions.appendChild(copyPasswordButton);
 
   list.appendChild(item);
@@ -145,6 +151,20 @@ async function fillCredentialsInBrowser(username, password) {
         message: 'fill_creds',
         username: username,
         password: password
+      });
+      break;
+    }
+  }
+}
+
+async function copyStringToClipboard(string) {
+  var tabs = await browser.tabs.query({ active: true, currentWindow: true });
+  for (let tabIndex = 0; tabIndex < tabs.length; tabIndex++) {
+    var tab = tabs[tabIndex];
+    if (tab.url) {
+      browser.tabs.sendMessage(tab.id, {
+        message: 'copy_to_clipboard',
+        string: string
       });
       break;
     }

@@ -1,9 +1,29 @@
 /* global browser */
 // We can only access the TABs DOM with this script.
 // It will get the credentials via message passing from the popup
+// It is also responsible to copy strings to the clipboard
 
 browser.runtime.onMessage.addListener(request => {
-  if (request.message === 'fill_creds') {
+  if (request.message === 'copy_to_clipboard') {
+    const el = document.createElement('textarea');
+    el.value = request.string;
+    el.setAttribute('readonly', '');
+    el.style.position = 'absolute';
+    el.style.left = '-9999px';
+    document.body.appendChild(el);
+    const selected =
+      document.getSelection().rangeCount > 0
+        ? document.getSelection().getRangeAt(0)
+        : false;
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+    if (selected) {
+      document.getSelection().removeAllRanges();
+      document.getSelection().addRange(selected);
+    }
+  }
+  else if (request.message === 'fill_creds') {
     var inputs = document.getElementsByTagName('input');
     var passwordNode, usernameNode;
     for (let i = 0; i < inputs.length; i++) {
