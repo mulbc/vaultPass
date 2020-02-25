@@ -52,10 +52,11 @@
 
         <label class="label">
           Auth Mountpoint:
-          <select name="authMount" id="authMount" class="input">
-            <option value="ldap">ldap</option>
-            <option value="userpass">userpass</option>
-          </select>
+          <input type="text" list="mounts" name="authMount" id="authMount" class="input" />
+          <datalist id="mounts">
+            <option>ldap</option>
+            <option>userpass</option>
+          </datalist>
         </label>
 
         <input
