@@ -1,4 +1,5 @@
-/* global browser */
+/* eslint-disable no-console */
+/* global browser, chrome */
 // We can only access the TABs DOM with this script.
 // It will get the credentials via message passing from the popup
 // It is also responsible to copy strings to the clipboard
@@ -80,3 +81,13 @@ browser.runtime.onMessage.addListener(request => {
   }
 }
 );
+
+function fillForm() {
+  if (document.querySelectorAll('input[type=\'password\']').length) {
+    chrome.runtime.sendMessage({
+      type: 'auto_fill_secrets',
+    });
+  }
+}
+
+fillForm();
