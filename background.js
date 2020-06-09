@@ -86,6 +86,8 @@ async function autoFillSecrets(message, sender) {
           username: credentials.data.data.username,
           password: credentials.data.data.password,
         });
+
+        return;
       }
     }
   }
