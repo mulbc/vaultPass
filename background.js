@@ -95,7 +95,7 @@ async function autoFillSecrets(message, sender) {
 
 chrome.runtime.onMessage.addListener(function(message, sender) {
   if (message.type === 'auto_fill_secrets') {
-    autoFillSecrets(message, sender);
+    autoFillSecrets(message, sender).catch(console.error);
   }
 });
 
