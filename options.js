@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /* global authButtonClick browser Notify */
 
 const notify = new Notify(document.querySelector('#notify'));
@@ -18,7 +19,7 @@ async function mainLoaded() {
   }
   var vaultToken = (await browser.storage.local.get('vaultToken')).vaultToken;
   if (vaultToken) {
-    querySecrets(vaultServerAdress, vaultToken, null);
+    await querySecrets(vaultServerAdress, vaultToken, null);
   }
 
   // put listener on login button
@@ -48,7 +49,7 @@ async function querySecrets(vaultServerAdress, vaultToken, policies) {
     );
     throw new Error(`Fetching list of secret directories failed: ${await fetchListOfSecretDirs.text()}`);
   }
-  displaySecrets((await fetchListOfSecretDirs.json()).data.keys);
+  await displaySecrets((await fetchListOfSecretDirs.json()).data.keys);
 }
 
 async function logout() {
@@ -158,7 +159,7 @@ async function authToVault(vaultServer, username, password, authMount) {
   const authinfo = (await loginToVault.json()).auth;
   const token = authinfo.client_token;
   await browser.storage.local.set({ 'vaultToken': token });
-  querySecrets(vaultServer, token, authinfo.policies);
+  await querySecrets(vaultServer, token, authinfo.policies);
   // TODO: Use user token to generate app token with 20h validity - then use THAT token
 
 }
@@ -180,4 +181,6 @@ async function authButtonClick() {
   }
 }
 
-document.addEventListener('DOMContentLoaded', mainLoaded, false);
+document.addEventListener('DOMContentLoaded', function() {
+  mainLoaded().catch(console.error);
+}, false);
