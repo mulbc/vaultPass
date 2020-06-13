@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /* global browser Notify */
 
 const notify = new Notify(document.querySelector('#notify'));
@@ -69,7 +70,12 @@ async function mainLoaded() {
       }
     })());
   }
-  await Promise.all(promises);
+
+  try {
+    await Promise.all(promises);
+  } catch (err) {
+    notify.clear().error(err.message);
+  }
 }
 
 function addCredentials(credentials, credentialName, list) {

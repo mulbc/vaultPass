@@ -7,6 +7,10 @@ async function mainLoaded() {
   var vaultServer = document.getElementById('serverBox');
   var login = document.getElementById('loginBox');
 
+  // put listener on login button
+  document.getElementById('authButton').addEventListener('click', authButtonClick, false);
+  document.getElementById('logoutButton').addEventListener('click', logout, false);
+
   var vaultServerAdress = (await browser.storage.sync.get('vaultAddress')).vaultAddress;
   if (vaultServerAdress) {
     vaultServer.value = vaultServerAdress;
@@ -19,12 +23,12 @@ async function mainLoaded() {
   }
   var vaultToken = (await browser.storage.local.get('vaultToken')).vaultToken;
   if (vaultToken) {
-    await querySecrets(vaultServerAdress, vaultToken, null);
+    try {
+      await querySecrets(vaultServerAdress, vaultToken, null);
+    } catch (err) {
+      notify.clear().error(err.message);
+    }
   }
-
-  // put listener on login button
-  document.getElementById('authButton').addEventListener('click', authButtonClick, false);
-  document.getElementById('logoutButton').addEventListener('click', logout, false);
 }
 
 async function querySecrets(vaultServerAdress, vaultToken, policies) {
@@ -175,12 +179,14 @@ async function authButtonClick() {
     // if input fields are not empty, attempt authorization to specified vault server URL.
     await browser.storage.sync.set({ 'vaultAddress': vaultServer.value });
     await browser.storage.sync.set({ 'username': login.value });
-    authToVault(vaultServer.value, login.value, pass.value, authMount.value);
+    try {
+      await authToVault(vaultServer.value, login.value, pass.value, authMount.value);
+    } catch (err) {
+      notify.clear().error(err.message);
+    }
   } else {
     notify.error('Bad input, must fill in all 3 fields.');
   }
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-  mainLoaded().catch(console.error);
-}, false);
+document.addEventListener('DOMContentLoaded', mainLoaded, false);
