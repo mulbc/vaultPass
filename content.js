@@ -41,6 +41,8 @@ function findUsernameNodeIn(parentNode, visible) {
     '[autocomplete="username"]',
     '[autocomplete="nickname"]',
     '[type="email"]',
+    '[name="auth[username]"]',
+    '[name="user_name"]',
     '[type="text"][name="email"]',
     '[type="text"][name="mail"]',
     '[type="text"][name="nickname"]',
