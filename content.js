@@ -62,6 +62,20 @@ function findUsernameNodeIn(parentNode, visible) {
   return null;
 }
 
+function createEvent(name) {
+  const event = document.createEvent('Events');
+  event.initEvent(name, true, true);
+  return event;
+}
+
+function fillIn(node, value) {
+  node.focus();
+  node.value = value;
+  node.dispatchEvent(createEvent('input'));
+  node.dispatchEvent(createEvent('change'));
+  node.blur();
+}
+
 function handleFillCredits(request) {
   const passwordNode = document.querySelector('input[type=\'password\']');
   if (!passwordNode) return;
@@ -72,8 +86,8 @@ function handleFillCredits(request) {
   const usernameNode = formNode ? findUsernameNodeIn(formNode) : findUsernameNodeIn(document, true);
   if (!usernameNode) return;
 
-  usernameNode.value = request.username;
-  passwordNode.value = request.password;
+  fillIn(usernameNode, request.username);
+  fillIn(passwordNode, request.password);
 }
 
 function fillForm() {
