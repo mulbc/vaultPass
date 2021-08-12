@@ -229,7 +229,7 @@ body {
 }
 
 .list__item-text-title {
-  text-transform: capitalize;
+  text-transform: none;
 }
 
 .list__item-text-title::before {
