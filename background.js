@@ -75,9 +75,14 @@ async function autoFillSecrets(message, sender) {
 
   const vault = new Vault(vaultToken, vaultAddress);
 
+  let loginCount = 0;
+
   for (let secret of secretList) {
     const secretKeys = await vault.list(`/secret/metadata/vaultPass/${secret}`);
     for (let key of secretKeys.data.keys) {
+      var pattern = new RegExp(key);
+      var patternMatches = pattern.test(hostname);
+      // If the key is an exact match to the current hostname --> autofill
       if (hostname === clearHostname(key)) {
         const credentials = await vault.get(`/secret/data/vaultPass/${secret}${key}`);
 
@@ -86,11 +91,16 @@ async function autoFillSecrets(message, sender) {
           username: credentials.data.data.username,
           password: credentials.data.data.password,
         });
-
-        return;
+      }
+      if (patternMatches) {
+        loginCount++;
       }
     }
   }
+  if (loginCount == 0) {
+    return;
+  }
+  chrome.action.setBadgeText({text: `${loginCount}`,tabId: sender.tab.id});
 }
 
 chrome.runtime.onMessage.addListener(function(message, sender) {

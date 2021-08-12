@@ -91,11 +91,9 @@ function handleFillCredits(request) {
 }
 
 function fillForm() {
-  if (document.querySelectorAll('input[type=\'password\']').length) {
-    chrome.runtime.sendMessage({
-      type: 'auto_fill_secrets',
-    });
-  }
+  chrome.runtime.sendMessage({
+    type: 'auto_fill_secrets',
+  });
 }
 
 fillForm();
