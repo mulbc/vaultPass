@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 class Notify {
   constructor(node) {
     this.node = node;
@@ -6,39 +7,42 @@ class Notify {
 
   /**
    * @param {String} message will be parsed to HTML
-   * @param {Object} options 
+   * @param {Object} options
    * @param {Boolean} [options.removeOption] wether or not to show the ✖
    * @param {Number} [options.time] when declared, notification will disappear after Xms
    * @returns this
    */
   error(message, options) {
+    // eslint-disable-next-line
     return this.message({ level: 'error', message, ...options });
   }
 
   /**
    * @param {String} message will be parsed to HTML
-   * @param {Object} options 
+   * @param {Object} options
    * @param {Boolean} [options.removeOption] wether or not to show the ✖
    * @param {Number} [options.time] when declared, notification will disappear after Xms
    * @returns this
    */
   success(message, options) {
+    // eslint-disable-next-line
     return this.message({ level: 'success', message, ...options });
   }
 
   /**
    * @param {String} message will be parsed to HTML
-   * @param {Object} options 
+   * @param {Object} options
    * @param {Boolean} [options.removeOption] wether or not to show the ✖
    * @param {Number} [options.time] when declared, notification will disappear after Xms
    * @returns this
    */
   info(message, options) {
+    // eslint-disable-next-line
     return this.message({ level: 'info', message, ...options });
   }
 
   /**
-   * @param {Object} options 
+   * @param {Object} options
    * @param {String} options.message will be parsed to HTML
    * @param {String} [options.level] info|error|success
    * @param {Boolean} [options.removeOption] wether or not to show the ✖

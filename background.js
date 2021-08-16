@@ -3,9 +3,9 @@
 
 function storageGetterProvider(storageType) {
   return function (key, defaultValue) {
-    return new Promise(function(resolve, reject) {
+    return new Promise(function (resolve, reject) {
       try {
-        chrome.storage[storageType].get([key], function(result) {
+        chrome.storage[storageType].get([key], function (result) {
           const value = result[key] || defaultValue || null;
           resolve(value);
         });
@@ -37,7 +37,7 @@ class Vault {
       method: method.toUpperCase(),
       headers: {
         'X-Vault-Token': this.token,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
     });
 
@@ -84,7 +84,9 @@ async function autoFillSecrets(message, sender) {
       var patternMatches = pattern.test(hostname);
       // If the key is an exact match to the current hostname --> autofill
       if (hostname === clearHostname(key)) {
-        const credentials = await vault.get(`/secret/data/vaultPass/${secret}${key}`);
+        const credentials = await vault.get(
+          `/secret/data/vaultPass/${secret}${key}`
+        );
 
         chrome.tabs.sendMessage(sender.tab.id, {
           message: 'fill_creds',
@@ -100,10 +102,10 @@ async function autoFillSecrets(message, sender) {
   if (loginCount == 0) {
     return;
   }
-  chrome.action.setBadgeText({text: `${loginCount}`,tabId: sender.tab.id});
+  chrome.action.setBadgeText({ text: `${loginCount}`, tabId: sender.tab.id });
 }
 
-chrome.runtime.onMessage.addListener(function(message, sender) {
+chrome.runtime.onMessage.addListener(function (message, sender) {
   if (message.type === 'auto_fill_secrets') {
     autoFillSecrets(message, sender).catch(console.error);
   }

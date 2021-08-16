@@ -4,14 +4,14 @@
 // It will get the credentials via message passing from the popup
 // It is also responsible to copy strings to the clipboard
 
-browser.runtime.onMessage.addListener(request => {
-  switch(request.message) {
-  case 'copy_to_clipboard':
-    handleCopyToClipboard(request);
-    break;
-  case 'fill_creds':
-    handleFillCredits(request);
-    break;
+browser.runtime.onMessage.addListener((request) => {
+  switch (request.message) {
+    case 'copy_to_clipboard':
+      handleCopyToClipboard(request);
+      break;
+    case 'fill_creds':
+      handleFillCredits(request);
+      break;
   }
 });
 
@@ -54,7 +54,7 @@ function findUsernameNodeIn(parentNode, visible) {
 
   for (let selector of matches) {
     const usernameNode = parentNode.querySelector(selector);
-    if (usernameNode && (visible ? usernameNode.offsetParent : true )) {
+    if (usernameNode && (visible ? usernameNode.offsetParent : true)) {
       return usernameNode;
     }
   }
@@ -77,13 +77,16 @@ function fillIn(node, value) {
 }
 
 function handleFillCredits(request) {
-  const passwordNode = document.querySelector('input[type=\'password\']');
+  // eslint-disable-next-line quotes
+  const passwordNode = document.querySelector("input[type='password']");
   if (!passwordNode) return;
 
   const formNode = passwordNode.closest('form');
   // Go completely crazy and wild guess any visible input field for the username if empty formNode
   // https://stackoverflow.com/a/21696585
-  const usernameNode = formNode ? findUsernameNodeIn(formNode) : findUsernameNodeIn(document, true);
+  const usernameNode = formNode
+    ? findUsernameNodeIn(formNode)
+    : findUsernameNodeIn(document, true);
   if (!usernameNode) return;
 
   fillIn(usernameNode, request.username);

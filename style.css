@@ -81,7 +81,7 @@ body {
 }
 
 .header::before {
-  content: "";
+  content: '';
   width: 600px;
   height: 300px;
   background: var(--gradient-blue);
@@ -233,11 +233,11 @@ body {
 }
 
 .list__item-text-title::before {
-  content: "";
+  content: '';
   width: 14px;
   height: 14px;
   margin-right: 3px;
-  background: url("icons/key.svg");
+  background: url('icons/key.svg');
   background-size: contain;
   background-repeat: no-repeat;
   background-position: bottom;
