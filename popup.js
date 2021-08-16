@@ -2,20 +2,25 @@
 /* global browser Notify */
 
 const notify = new Notify(document.querySelector('#notify'));
-async function mainLoaded() {
-  var resultList = document.getElementById('resultList');
-  var currentUrl;
+var resultList = document.getElementById('resultList');
+var searchInput = document.getElementById('vault-search');
+var searchRegex, vaultServerAdress, vaultToken, secretList;
 
+async function mainLoaded() {
   var tabs = await browser.tabs.query({ active: true, currentWindow: true });
   for (let tabIndex = 0; tabIndex < tabs.length; tabIndex++) {
     var tab = tabs[tabIndex];
     if (tab.url) {
-      currentUrl = tab.url;
+      searchRegex = tab.url;
       break;
     }
   }
 
-  var vaultToken = (await browser.storage.local.get('vaultToken')).vaultToken;
+  if (searchInput.value.length != 0) {
+    searchRegex = searchInput.value;
+  }
+
+  vaultToken = (await browser.storage.local.get('vaultToken')).vaultToken;
   if (!vaultToken || vaultToken.length === 0) {
     return notify.clear().info(
       `No Vault-Token information available.<br>
@@ -24,51 +29,58 @@ async function mainLoaded() {
     );
   }
 
-  var vaultServerAdress = (await browser.storage.sync.get('vaultAddress'))
+  vaultServerAdress = (await browser.storage.sync.get('vaultAddress'))
     .vaultAddress;
 
-  var secretList = (await browser.storage.sync.get('secrets')).secrets;
+  secretList = (await browser.storage.sync.get('secrets')).secrets;
   if (!secretList) {
     secretList = [];
   }
-  resultList.textContent = '';
+  querySecrets(searchRegex);
+}
 
+async function querySecrets(searchString) {
+  resultList.textContent = '';
   var promises = [];
+  notify.clear();
   for (const secret of secretList) {
-    promises.push((async function () {
-      var secretsInPath = await fetch(`${vaultServerAdress}/v1/secret/metadata/vaultPass/${secret}`, {
-        method: 'LIST',
-        headers: {
-          'X-Vault-Token': vaultToken,
-          'Content-Type': 'application/json'
-        },
-      });
-      if (!secretsInPath.ok) {
-        notify.error(
-          `Token is not able to read ${secret}... Try re-login`,
-          { removeOption: true }
+    promises.push(
+      (async function () {
+        var secretsInPath = await fetch(
+          `${vaultServerAdress}/v1/secret/metadata/vaultPass/${secret}`,
+          {
+            method: 'LIST',
+            headers: {
+              'X-Vault-Token': vaultToken,
+              'Content-Type': 'application/json',
+            },
+          }
         );
-        return;
-      }
-      let anyMatch = false;
-      for (const element of (await secretsInPath.json()).data.keys) {
-        var pattern = new RegExp(element);
-        var patternMatches = pattern.test(currentUrl);
-        if (patternMatches) {
-          const urlPath = `${vaultServerAdress}/v1/secret/data/vaultPass/${secret}${element}`;
-          const credentials = await getCredentials(urlPath);
-          addCredentials(credentials.data.data, element, resultList);
-          anyMatch = true;
-          notify.clear();
+        if (!secretsInPath.ok) {
+          notify.error(`Token is not able to read ${secret}... Try re-login`, {
+            removeOption: true,
+          });
+          return;
         }
-      }
-      if (!anyMatch) {
-        notify.info(
-          'No matching key found for this page.',
-          { removeOption: false }
-        );
-      }
-    })());
+        let anyMatch = false;
+        for (const element of (await secretsInPath.json()).data.keys) {
+          var pattern = new RegExp(element);
+          var patternMatches = pattern.test(searchString);
+          if (patternMatches) {
+            const urlPath = `${vaultServerAdress}/v1/secret/data/vaultPass/${secret}${element}`;
+            const credentials = await getCredentials(urlPath);
+            addCredentialsToList(credentials.data.data, element, resultList);
+            anyMatch = true;
+            notify.clear();
+          }
+        }
+        if (!anyMatch) {
+          notify.info('No matching key found for this page.', {
+            removeOption: false,
+          });
+        }
+      })()
+    );
   }
 
   try {
@@ -78,7 +90,13 @@ async function mainLoaded() {
   }
 }
 
-function addCredentials(credentials, credentialName, list) {
+const searchHandler = function (e) {
+  querySecrets(e.target.value);
+};
+
+searchInput.addEventListener('input', searchHandler);
+
+function addCredentialsToList(credentials, credentialName, list) {
   const item = document.createElement('li');
   item.classList.add('list__item', 'list__item--three-line');
 
@@ -144,8 +162,8 @@ async function getCredentials(urlPath) {
   const result = await fetch(urlPath, {
     headers: {
       'X-Vault-Token': vaultToken,
-      'Content-Type': 'application/json'
-    }
+      'Content-Type': 'application/json',
+    },
   });
   if (!result.ok) {
     throw new Error(`getCredentials: ${await result.text}`);
@@ -163,7 +181,7 @@ async function fillCredentialsInBrowser(username, password) {
       browser.tabs.sendMessage(tab.id, {
         message: 'fill_creds',
         username: username,
-        password: password
+        password: password,
       });
       break;
     }
@@ -177,7 +195,7 @@ async function copyStringToClipboard(string) {
     if (tab.url) {
       browser.tabs.sendMessage(tab.id, {
         message: 'copy_to_clipboard',
-        string: string
+        string: string,
       });
       break;
     }
