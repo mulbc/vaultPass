@@ -52,10 +52,18 @@
 
         <label class="label">
           Auth Mountpoint:
-          <input type="text" list="mounts" name="authMount" id="authMount" class="input" />
+          <input
+            type="text"
+            list="mounts"
+            name="authMount"
+            id="authMount"
+            class="input"
+          />
           <datalist id="mounts">
             <option>ldap</option>
             <option>userpass</option>
+            <option>radius</option>
+            <option>okta</option>
           </datalist>
         </label>
 
@@ -71,7 +79,7 @@
         <ul id="secretList" class="list gutter"></ul>
       </div>
 
-      <div id="logout" style="display: none;">
+      <div id="logout" style="display: none">
         <input type="submit" class="button" value="Logout" id="logoutButton" />
       </div>
     </main>
