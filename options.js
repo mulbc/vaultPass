@@ -58,11 +58,12 @@ async function querySecrets(vaultServerAdress, vaultToken, policies) {
     }
   );
   if (!fetchListOfSecretDirs.ok) {
+    const returnText = await fetchListOfSecretDirs.text();
     notify.error(
-      `Fetching list of secret directories failed: ${await fetchListOfSecretDirs.text()}`
+      `Fetching list of secret directories failed: ${returnText}`
     );
     throw new Error(
-      `Fetching list of secret directories failed: ${await fetchListOfSecretDirs.text()}`
+      `Fetching list of secret directories failed: ${returnText}`
     );
   }
   await displaySecrets((await fetchListOfSecretDirs.json()).data.keys);
