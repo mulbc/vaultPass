@@ -7,12 +7,22 @@ GIT_ROOT=$(git rev-parse --show-toplevel)
 
 docker run \
     --cap-add=IPC_LOCK \
+    --detach \
     --env 'VAULT_DEV_ROOT_TOKEN_ID=myroot' \
     --name=dev-vault \
-    --detach \
     --publish 8200:8200/tcp \
+    --publish 10389:10389 \
+    --publish 10636:10636 \
+    --pod new:vaultpass-dev \
     --rm \
     vault
+
+docker run \
+    --rm \
+    --detach \
+    --name=dev-ldap \
+    --pod vaultpass-dev \
+    docker.io/rroemhild/test-openldap:latest
 
 VAULT_SETUP="
 # Login to Vault
@@ -29,6 +39,22 @@ vault write \
     password=foo \
     policies=admins
 vault write /sys/policy/default policy=@/dev_default.hcl
+
+# Enable LDAP auth
+vault auth enable ldap
+# Configure LDAP for test-openldap server
+vault write auth/ldap/config \
+    url='ldaps://localhost:10636' \
+    userattr=uid \
+    userdn='ou=people,dc=planetexpress,dc=com' \
+    groupdn='ou=people,dc=planetexpress,dc=com' \
+    groupfilter='(objectClass=group)' \
+    groupattr='cn' \
+    binddn='cn=admin,dc=planetexpress,dc=com' \
+    bindpass='GoodNewsEveryone' \
+    insecure_tls=true \
+    starttls=true
+vault write auth/ldap/groups/admin_staff policies=admin
 "
 
 docker cp "$GIT_ROOT/dev_default.hcl" dev-vault:/
