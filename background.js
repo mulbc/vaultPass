@@ -110,10 +110,3 @@ chrome.runtime.onMessage.addListener(function (message, sender) {
     autoFillSecrets(message, sender).catch(console.error);
   }
 });
-
-// chrome.webNavigation.onCompleted.addListener(function(details) {
-// }, {
-//   url: [
-//     { schemes: ['https', 'http'] }
-//   ]
-// });
