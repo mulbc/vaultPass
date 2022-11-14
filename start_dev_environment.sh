@@ -60,3 +60,5 @@ vault write auth/ldap/groups/admin_staff policies=admin
 docker cp "$GIT_ROOT/dev_default.hcl" dev-vault:/
 
 docker exec -it --env 'VAULT_ADDR=http://127.0.0.1:8200' dev-vault sh -c "$VAULT_SETUP"
+
+printf "\n\nDEV ENVIRONMENT STARTED!\n  Root token: myroot,\n  Vault web address: http://127.0.0.1:8200/ui\n\n  LDAP test user: mitchellh\n  LDAP test userpassword: foo"
