@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-/* global browser, chrome */
+/* global browser */
 // We can only access the TABs DOM with this script.
 // It will get the credentials via message passing from the popup
 // It is also responsible to copy strings to the clipboard
@@ -11,6 +11,9 @@ browser.runtime.onMessage.addListener((request) => {
       break;
     case 'fill_creds':
       handleFillCredits(request);
+      break;
+    case 'fetch_token':
+      handleFetchToken();
       break;
   }
 });
@@ -93,8 +96,38 @@ function handleFillCredits(request) {
   fillIn(passwordNode, request.password);
 }
 
+function handleFetchToken() {
+  let element = '';
+  for (const [, value] of Object.entries(window.localStorage)) {
+    try {
+      element = JSON.parse(value);
+    } catch {
+      continue;
+    }
+    if (
+      Object.prototype.hasOwnProperty.call(element,'token') &&
+      Object.prototype.hasOwnProperty.call(element,'ttl') &&
+      Object.prototype.hasOwnProperty.call(element,'policies')
+    ) {
+      browser.runtime.sendMessage({
+        type: 'fetch_token',
+        token: element.token,
+        policies: element.policies,
+        address: window.location.origin,
+      });
+      return;
+    }
+  }
+  browser.runtime.sendMessage({
+    type: 'token_missing',
+    token: element.token,
+    policies: element.policies,
+    address: window.location.origin,
+  });
+}
+
 function fillForm() {
-  chrome.runtime.sendMessage({
+  browser.runtime.sendMessage({
     type: 'auto_fill_secrets',
   });
 }

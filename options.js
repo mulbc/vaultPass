@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-/* global authButtonClick browser Notify */
+/* global browser Notify */
 
 const notify = new Notify(document.querySelector('#notify'));
 async function mainLoaded() {
@@ -11,6 +11,9 @@ async function mainLoaded() {
   document
     .getElementById('authButton')
     .addEventListener('click', authButtonClick, false);
+  document
+    .getElementById('tokenGrabber')
+    .addEventListener('click', tokenGrabberClick, false);
   document
     .getElementById('logoutButton')
     .addEventListener('click', logout, false);
@@ -59,9 +62,7 @@ async function querySecrets(vaultServerAdress, vaultToken, policies) {
   );
   if (!fetchListOfSecretDirs.ok) {
     const returnText = await fetchListOfSecretDirs.text();
-    notify.error(
-      `Fetching list of secret directories failed: ${returnText}`
-    );
+    notify.error(`Fetching list of secret directories failed: ${returnText}`);
     throw new Error(
       `Fetching list of secret directories failed: ${returnText}`
     );
@@ -223,4 +224,32 @@ async function authButtonClick() {
   }
 }
 
+async function tokenGrabberClick() {
+  var tabs = await browser.tabs.query({ active: true, currentWindow: true });
+  for (let tabIndex = 0; tabIndex < tabs.length; tabIndex++) {
+    var tab = tabs[tabIndex];
+    if (tab.url) {
+      browser.tabs.sendMessage(tab.id, {
+        message: 'fetch_token',
+      });
+      break;
+    }
+  }
+}
+
 document.addEventListener('DOMContentLoaded', mainLoaded, false);
+
+browser.runtime.onMessage.addListener( async function (message) {
+  switch (message.type) {
+    case 'fetch_token':
+      await browser.storage.local.set({ vaultToken: message.token });
+      await browser.storage.sync.set({ vaultAddress: message.address });
+      await querySecrets(message.address, message.token, message.policies);
+      break;
+    case 'token_missing':
+      notify.error('Failed to find Vault info from current tab');
+      break;
+    default:
+      break;
+  }
+});
