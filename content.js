@@ -38,31 +38,44 @@ function handleCopyToClipboard(request) {
   }
 }
 
-function findUsernameNodeIn(parentNode, visible) {
+function findUsernameNodeIn(parentNode, checkVisibility) {
   const matches = [
     '[autocomplete="email"]',
     '[autocomplete="username"]',
     '[autocomplete="nickname"]',
+    '[id="username"]',
+    '[id="userid"]',
+    '[id="login"]',
+    '[id="email"]',
     '[type="email"]',
     '[name="user_name"]',
     '[name="auth[username]"]',
+    '[type="text"][name="username"]',
+    '[type="text"][name="userid"]',
+    '[type="text"][name="login"]',
     '[type="text"][name="email"]',
     '[type="text"][name="mail"]',
     '[type="text"][name="nickname"]',
     '[type="text"][name="nick"]',
-    '[type="text"][name="username"]',
-    '[type="text"][name="login"]',
     '[type="text"]',
   ];
 
   for (let selector of matches) {
-    const usernameNode = parentNode.querySelector(selector);
-    if (usernameNode && (visible ? usernameNode.offsetParent : true)) {
+    const allUsernameNodes = parentNode.querySelectorAll(selector);
+
+    let usernameNode = null;
+    for (let node of allUsernameNodes) {
+      if (checkVisibility ? node.offsetParent : true) {
+        usernameNode = node;
+        break;
+      }
+    }
+    if (usernameNode) {
       return usernameNode;
     }
-  }
+   }
 
-  return null;
+   return null;
 }
 
 function createEvent(name) {
@@ -82,9 +95,12 @@ function fillIn(node, value) {
 function handleFillCredits(request) {
   // eslint-disable-next-line quotes
   const passwordNode = document.querySelector("input[type='password']");
-  if (!passwordNode) return;
+  // A number of websites now prompt for the password separately
+  if (passwordNode) {
+    fillIn(passwordNode, request.password);
+  }
 
-  const formNode = passwordNode.closest('form');
+  const formNode = passwordNode?.closest('form');
   // Go completely crazy and wild guess any visible input field for the username if empty formNode
   // https://stackoverflow.com/a/21696585
   const usernameNode = formNode
@@ -93,7 +109,6 @@ function handleFillCredits(request) {
   if (!usernameNode) return;
 
   fillIn(usernameNode, request.username);
-  fillIn(passwordNode, request.password);
 }
 
 function handleFetchToken() {
