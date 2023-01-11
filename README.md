@@ -15,6 +15,10 @@ A project started on a Hackathon @ ironSource by [Dimitry1987](https://github.co
 3. Select credentials from popup and have them filled into the website
 4. Copy username & password to the clipboard
 
+### Token grabber
+
+The token grabber feature allows this plugin to effectively use any Vault authentication method, including ones that don't use a username-password (such as OIDC or GitHub). In order to use this feature, log into Vault via your preferred authentication method, and press the **Get token from Vault** button in Options, **while on the Vault browser window**. All login-related fields of the plugin can be left empty, even the Vault URL.
+
 ## Requirements
 
 Vault needs to be prepared to use this extention.
