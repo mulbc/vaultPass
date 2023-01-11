@@ -43,10 +43,10 @@ function findUsernameNodeIn(parentNode, checkVisibility) {
     '[autocomplete="email"]',
     '[autocomplete="username"]',
     '[autocomplete="nickname"]',
-    '[id="username"]',
-    '[id="userid"]',
-    '[id="login"]',
-    '[id="email"]',
+    'input[id="username"]',
+    'input[id="userid"]',
+    'input[id="login"]',
+    'input[id="email"]',
     '[type="email"]',
     '[name="user_name"]',
     '[name="user"]',
@@ -93,9 +93,18 @@ function fillIn(node, value) {
   node.blur();
 }
 
-function handleFillCredits(request) {
+function findPasswordInput() {
   // eslint-disable-next-line quotes
-  const passwordNode = document.querySelector("input[type='password']");
+  const passwordNodes = document.querySelectorAll("input[type='password']");
+  for (let node of passwordNodes) {
+    if (node.offsetParent) return node;
+  }
+
+  return passwordNodes.length > 0 ? passwordNodes[0] : null;
+}
+
+function handleFillCredits(request) {
+  const passwordNode = findPasswordInput();
   // A number of websites now prompt for the password separately
   if (passwordNode) {
     fillIn(passwordNode, request.password);
