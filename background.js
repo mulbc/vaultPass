@@ -102,7 +102,7 @@ async function autoFillSecrets(message, sender) {
   if (loginCount == 0) {
     return;
   }
-  chrome.action.setBadgeText({ text: `${loginCount}`, tabId: sender.tab.id });
+  chrome.action.setBadgeText({ text: `*`, tabId: sender.tab.id });
 }
 
 chrome.runtime.onMessage.addListener(function (message, sender) {
