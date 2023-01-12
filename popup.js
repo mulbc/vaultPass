@@ -36,12 +36,13 @@ async function mainLoaded() {
   if (!secretList) {
     secretList = [];
   }
-  querySecrets(searchRegex);
+  querySecrets(searchRegex, (searchInput.value.length != 0));
 }
 
-async function querySecrets(searchString) {
+async function querySecrets(searchString, manualSearch) {
   resultList.textContent = '';
   var promises = [];
+  let anyMatch = false;
   notify.clear();
   for (const secret of secretList) {
     promises.push(
@@ -62,10 +63,9 @@ async function querySecrets(searchString) {
           });
           return;
         }
-        let anyMatch = false;
         for (const element of (await secretsInPath.json()).data.keys) {
           var pattern = new RegExp(element);
-          var patternMatches = pattern.test(searchString);
+          var patternMatches = (pattern.test(searchString) || element.includes(searchString));
           if (patternMatches) {
             const urlPath = `${vaultServerAdress}/v1/secret/data/vaultPass/${secret}${element}`;
             const credentials = await getCredentials(urlPath);
@@ -74,27 +74,33 @@ async function querySecrets(searchString) {
             notify.clear();
           }
         }
-        if (!anyMatch) {
-          notify.info('No matching key found for this page.', {
-            removeOption: false,
-          });
-        }
       })()
     );
   }
 
   try {
     await Promise.all(promises);
+    if (!anyMatch && !manualSearch) {
+      notify.info('No matching key found for this page.', {
+        removeOption: false,
+      });
+    } else if (!anyMatch) {
+      notify.info('No matching key found for the search', {
+        removeOption: false,
+      });
+    }
   } catch (err) {
     notify.clear().error(err.message);
   }
 }
 
 const searchHandler = function (e) {
-  querySecrets(e.target.value);
+  if (e.key === 'Enter') {
+    mainLoaded()
+  }
 };
 
-searchInput.addEventListener('input', searchHandler);
+searchInput.addEventListener('keypress', searchHandler);
 
 function addCredentialsToList(credentials, credentialName, list) {
   const item = document.createElement('li');
