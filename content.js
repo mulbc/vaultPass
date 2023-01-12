@@ -62,11 +62,13 @@ function findUsernameNodeIn(parentNode, checkVisibility) {
   ];
 
   for (let selector of matches) {
+    console.log(selector);
     const allUsernameNodes = parentNode.querySelectorAll(selector);
 
     let usernameNode = null;
     for (let node of allUsernameNodes) {
       if (checkVisibility ? node.offsetParent : true) {
+        console.log(node);
         usernameNode = node;
         break;
       }
@@ -107,6 +109,7 @@ function handleFillCredits(request) {
   const passwordNode = findPasswordInput();
   // A number of websites now prompt for the password separately
   if (passwordNode) {
+    console.log(passwordNode);
     fillIn(passwordNode, request.password);
   }
 

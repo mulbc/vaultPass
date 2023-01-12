@@ -4,20 +4,22 @@
 const notify = new Notify(document.querySelector('#notify'));
 var resultList = document.getElementById('resultList');
 var searchInput = document.getElementById('vault-search');
-var searchRegex, vaultServerAdress, vaultToken, secretList;
+var currentUrl, vaultServerAdress, vaultToken, secretList;
+var currentTabId;
 
 async function mainLoaded() {
   var tabs = await browser.tabs.query({ active: true, currentWindow: true });
   for (let tabIndex = 0; tabIndex < tabs.length; tabIndex++) {
     var tab = tabs[tabIndex];
     if (tab.url) {
-      searchRegex = tab.url;
+      currentTabId = tab.id;
+      currentUrl = tab.url;
       break;
     }
   }
 
   if (searchInput.value.length != 0) {
-    searchRegex = searchInput.value;
+    currentUrl = searchInput.value;
   }
 
   vaultToken = (await browser.storage.local.get('vaultToken')).vaultToken;
@@ -44,6 +46,8 @@ async function querySecrets(searchString, manualSearch) {
   var promises = [];
   let anyMatch = false;
   notify.clear();
+
+  let matches = 0;
   for (const secret of secretList) {
     promises.push(
       (async function () {
@@ -69,8 +73,14 @@ async function querySecrets(searchString, manualSearch) {
           if (patternMatches) {
             const urlPath = `${vaultServerAdress}/v1/secret/data/vaultPass/${secret}${element}`;
             const credentials = await getCredentials(urlPath);
-            addCredentialsToList(credentials.data.data, element, resultList);
-            anyMatch = true;
+            const credentialsSets = extractCredentialsSets(credentials.data.data);
+
+            for (let item of credentialsSets) {
+              addCredentialsToList(item, element, resultList);
+
+              matches++;
+            }
+            
             notify.clear();
           }
         }
@@ -80,16 +90,17 @@ async function querySecrets(searchString, manualSearch) {
 
   try {
     await Promise.all(promises);
-    if (!anyMatch && !manualSearch) {
+
+    if (matches > 0) {
+      chrome.action.setBadgeText({ text: `${matches}`, tabId: currentTabId });
+    } else {
+      chrome.action.setBadgeText({ text: ``, tabId: currentTabId });
       notify.info('No matching key found for this page.', {
-        removeOption: false,
-      });
-    } else if (!anyMatch) {
-      notify.info('No matching key found for the search', {
         removeOption: false,
       });
     }
   } catch (err) {
+    chrome.action.setBadgeText({ text: ``, tabId: currentTabId });
     notify.clear().error(err.message);
   }
 }
@@ -101,6 +112,26 @@ const searchHandler = function (e) {
 };
 
 searchInput.addEventListener('keyup', searchHandler);
+
+function extractCredentialsSets(data) {
+  const keys = Object.keys(data);
+  let credentials = [];
+
+  for (let key of keys) {
+    if (key.startsWith('username')) {
+      let passwordField = 'password' + key.substring(8);
+      if (data[passwordField]) {
+        credentials.push(
+        { 
+          username: data[key],
+          password: data['password' + key.substring(8)]
+        });
+      }
+    }
+  }
+
+  return credentials;
+}
 
 function addCredentialsToList(credentials, credentialName, list) {
   const item = document.createElement('li');
