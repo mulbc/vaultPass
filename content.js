@@ -38,7 +38,7 @@ function handleCopyToClipboard(request) {
   }
 }
 
-function findUsernameNodeIn(parentNode, checkVisibility) {
+function findUsernameNodeIn(parentNode, checkVisibility, isUserTriggered = false) {
   const matches = [
     '[autocomplete="email"]',
     '[autocomplete="username"]',
@@ -58,9 +58,12 @@ function findUsernameNodeIn(parentNode, checkVisibility) {
     '[type="text"][name="mail"]',
     '[type="text"][name="nickname"]',
     '[type="text"][name="nick"]',
-    '[type="text"]',
   ];
 
+  if (parentNode instanceof HTMLFormElement || isUserTriggered) {
+    matches.push('[type="text"]');
+  }
+  
   for (const selector of matches) {
     const allUsernameNodes = parentNode.querySelectorAll(selector);
 
@@ -115,7 +118,7 @@ function handleFillCredits(request) {
   // https://stackoverflow.com/a/21696585
   const usernameNode = formNode
     ? findUsernameNodeIn(formNode)
-    : findUsernameNodeIn(document, true);
+    : findUsernameNodeIn(document, true, request.isUserTriggered);
   if (!usernameNode) return;
 
   fillIn(usernameNode, request.username);
