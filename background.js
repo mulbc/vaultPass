@@ -41,7 +41,7 @@ class Vault {
       },
     });
 
-    if (!res.ok) throw new Error(`Something wrong: ${res.statusText}`);
+    if (!res.ok) throw new Error(`Error calling: ${method.toUpperCase()} ${this.base}${endpoint} -> HTTP ${res.status} - ${res.statusText}`);
 
     const json = await res.json();
 
@@ -57,6 +57,21 @@ class Vault {
   }
 }
 
+function storePathComponents(storePath) {
+  let path = 'secret/vaultPass';
+  if (storePath && storePath.length > 0) {
+    path = storePath;
+  }
+  const pathComponents = path.split('/');
+  const storeRoot = pathComponents[0];
+  const storeSubPath = pathComponents.length > 0 ? pathComponents.slice(1).join('/') : '';
+
+  return {
+    root: storeRoot,
+    subPath: storeSubPath
+  }
+}
+
 function clearHostname(hostname) {
   const match = hostname.match(/^(www\.)?(.*)$/);
 
@@ -67,6 +82,8 @@ async function autoFillSecrets(message, sender) {
   const vaultToken = await storage.local.get('vaultToken');
   const vaultAddress = await storage.sync.get('vaultAddress');
   const secretList = await storage.sync.get('secrets', []);
+  const storePath = await storage.sync.get('storePath');
+  const storeComponents = storePathComponents(storePath);
 
   if (!vaultAddress || !vaultAddress) return;
 
@@ -78,14 +95,14 @@ async function autoFillSecrets(message, sender) {
   let loginCount = 0;
 
   for (let secret of secretList) {
-    const secretKeys = await vault.list(`/secret/metadata/vaultPass/${secret}`);
+    const secretKeys = await vault.list(`/${storeComponents.root}/metadata/${storeComponents.subPath}/${secret}`);
     for (let key of secretKeys.data.keys) {
       var pattern = new RegExp(key);
       var patternMatches = pattern.test(hostname);
       // If the key is an exact match to the current hostname --> autofill
       if (hostname === clearHostname(key)) {
         const credentials = await vault.get(
-          `/secret/data/vaultPass/${secret}${key}`
+          `/${storeComponents.root}/data/${storeComponents.subPath}/${secret}${key}`
         );
 
         chrome.tabs.sendMessage(sender.tab.id, {
@@ -99,10 +116,9 @@ async function autoFillSecrets(message, sender) {
       }
     }
   }
-  if (loginCount == 0) {
-    return;
+  if (loginCount > 0) {
+    chrome.action.setBadgeText({ text: `*`, tabId: sender.tab.id });
   }
-  chrome.action.setBadgeText({ text: `*`, tabId: sender.tab.id });
 }
 
 chrome.runtime.onMessage.addListener(function (message, sender) {

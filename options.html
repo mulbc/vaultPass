@@ -51,7 +51,7 @@
         </label>
 
         <label class="label">
-          Auth Mountpoint:
+          Auth Method:
           <input
             type="text"
             list="mounts"
@@ -65,6 +65,11 @@
             <option>radius</option>
             <option>okta</option>
           </datalist>
+        </label>
+
+        <label class="label">
+          KV Store:
+          <input type="text" class="input" name="store" id="storeBox" placeholder="Path to the KV store within Vault" value="secret/vaultPass"/>
         </label>
 
         <input
@@ -91,6 +96,7 @@
     </main>
 
     <script src="Notify.js"></script>
+    <script src="common.js"></script>
     <script src="options.js"></script>
   </body>
 </html>

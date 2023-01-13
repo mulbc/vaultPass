@@ -6,6 +6,8 @@ async function mainLoaded() {
   // get inputs from form elements, server URL, login and password
   var vaultServer = document.getElementById('serverBox');
   var login = document.getElementById('loginBox');
+  var auth = document.getElementById('authMount');
+  var store = document.getElementById('storeBox');
 
   // put listener on login button
   document
@@ -18,10 +20,10 @@ async function mainLoaded() {
     .getElementById('logoutButton')
     .addEventListener('click', logout, false);
 
-  var vaultServerAdress = (await browser.storage.sync.get('vaultAddress'))
+  var vaultServerAddress = (await browser.storage.sync.get('vaultAddress'))
     .vaultAddress;
-  if (vaultServerAdress) {
-    vaultServer.value = vaultServerAdress;
+  if (vaultServerAddress) {
+    vaultServer.value = vaultServerAddress;
     vaultServer.parentNode.classList.add('is-dirty');
   }
   var username = (await browser.storage.sync.get('username')).username;
@@ -29,17 +31,27 @@ async function mainLoaded() {
     login.value = username;
     login.parentNode.classList.add('is-dirty');
   }
+  var authMethod = (await browser.storage.sync.get('authMethod')).authMethod;
+  if (authMethod) {
+    auth.value = authMethod;
+    auth.parentNode.classList.add('is-dirty');
+  }
+  var storePath = (await browser.storage.sync.get('storePath')).storePath;
+  if (storePath) {
+    store.value = storePath;
+    store.parentNode.classList.add('is-dirty');
+  }
   var vaultToken = (await browser.storage.local.get('vaultToken')).vaultToken;
   if (vaultToken) {
     try {
-      await querySecrets(vaultServerAdress, vaultToken, null);
+      await querySecrets(vaultServerAddress, vaultToken, null, storePath);
     } catch (err) {
       notify.clear().error(err.message);
     }
   }
 }
 
-async function querySecrets(vaultServerAdress, vaultToken, policies) {
+async function querySecrets(vaultServerAddress, vaultToken, policies, storePath) {
   // Hide login prompt if we already have a Token
   document.getElementById('login').style.display = 'none';
   document.getElementById('logout').style.display = 'block';
@@ -50,8 +62,10 @@ async function querySecrets(vaultServerAdress, vaultToken, policies) {
     });
   }
 
+  const storeComponents = storePathComponents(storePath);
+
   var fetchListOfSecretDirs = await fetch(
-    `${vaultServerAdress}/v1/secret/metadata/vaultPass`,
+    `${vaultServerAddress}/v1/${storeComponents.root}/metadata/${storeComponents.subPath}`,
     {
       method: 'LIST',
       headers: {
@@ -67,7 +81,16 @@ async function querySecrets(vaultServerAdress, vaultToken, policies) {
       `Fetching list of secret directories failed: ${returnText}`
     );
   }
-  await displaySecrets((await fetchListOfSecretDirs.json()).data.keys);
+  
+  let activeSecrets = (await browser.storage.sync.get('secrets')).secrets;
+  if (!activeSecrets) {
+    activeSecrets = [];
+  }
+
+  const availableSecrets = (await fetchListOfSecretDirs.json()).data.keys;
+  activeSecrets = activeSecrets.filter(x => availableSecrets.indexOf(x) !== -1);
+  await browser.storage.sync.set({ secrets: activeSecrets });
+  await displaySecrets(availableSecrets, activeSecrets);
 }
 
 async function logout() {
@@ -78,13 +101,9 @@ async function logout() {
   await browser.storage.local.set({ vaultToken: null });
 }
 
-async function displaySecrets(secrets) {
+async function displaySecrets(secrets, activeSecrets) {
   var list = document.getElementById('secretList');
-  var activeSecrets = (await browser.storage.sync.get('secrets')).secrets;
-  if (!activeSecrets) {
-    activeSecrets = [];
-  }
-
+  
   for (const secret of secrets) {
     // Create the list item:
     const item = document.createElement('li');
@@ -126,15 +145,17 @@ async function secretChanged({ checkbox, item }) {
   }
 
   if (checkbox.checked) {
-    var vaultServerAdress = (await browser.storage.sync.get('vaultAddress'))
+    var vaultServerAddress = (await browser.storage.sync.get('vaultAddress'))
       .vaultAddress;
     var vaultToken = (await browser.storage.local.get('vaultToken')).vaultToken;
     if (!vaultToken) {
       throw new Error('secretChanged: Vault Token is empty after login');
     }
 
+    var storePath = (await browser.storage.sync.get('storePath')).storePath;
+    const storeComponents = storePathComponents(storePath);
     var fetchListOfSecretsForDir = await fetch(
-      `${vaultServerAdress}/v1/secret/metadata/vaultPass/${checkbox.name}`,
+      `${vaultServerAddress}/v1/${storeComponents.root}/metadata/${storeComponents.subPath}/${checkbox.name}`,
       {
         method: 'LIST',
         headers: {
@@ -168,9 +189,9 @@ async function secretChanged({ checkbox, item }) {
 }
 
 // invoked after user clicks "login to vault" button, if all fields filled in, and URL passed regexp check.
-async function authToVault(vaultServer, username, password, authMount) {
+async function authToVault(vaultServer, username, password, authMethod, storePath) {
   var loginToVault = await fetch(
-    `${vaultServer}/v1/auth/${authMount}/login/${username}`,
+    `${vaultServer}/v1/auth/${authMethod}/login/${username}`,
     {
       method: 'POST',
       headers: {
@@ -182,7 +203,7 @@ async function authToVault(vaultServer, username, password, authMount) {
   if (!loginToVault.ok) {
     notify.error(`
       There was an error while calling<br>
-      ${vaultServer}/v1/auth/${authMount}/login/${username}<br>
+      ${vaultServer}/v1/auth/${authMethod}/login/${username}<br>
       Please check if your username, password and mountpoints are correct.
     `);
     new Error(`authToVault: ${await loginToVault.text}`);
@@ -190,7 +211,7 @@ async function authToVault(vaultServer, username, password, authMount) {
   const authinfo = (await loginToVault.json()).auth;
   const token = authinfo.client_token;
   await browser.storage.local.set({ vaultToken: token });
-  await querySecrets(vaultServer, token, authinfo.policies);
+  await querySecrets(vaultServer, token, authinfo.policies, storePath);
   // TODO: Use user token to generate app token with 20h validity - then use THAT token
 }
 
@@ -200,21 +221,29 @@ async function authButtonClick() {
   var login = document.getElementById('loginBox');
   var authMount = document.getElementById('authMount');
   var pass = document.getElementById('passBox');
+  var storePath = document.getElementById('storeBox');
   // verify input not empty. TODO: verify correct URL format.
   if (
     vaultServer.value.length > 0 &&
     login.value.length > 0 &&
     pass.value.length > 0
   ) {
+    if (storePath.value.length > 0 && storePath.value[0] === '/') {
+      storePath.value = storePath.value.substring(1);
+    }
+    
     // if input fields are not empty, attempt authorization to specified vault server URL.
     await browser.storage.sync.set({ vaultAddress: vaultServer.value });
     await browser.storage.sync.set({ username: login.value });
+    await browser.storage.sync.set({ authMethod: authMount.value });
+    await browser.storage.sync.set({ storePath: storePath.value });
     try {
       await authToVault(
         vaultServer.value,
         login.value,
         pass.value,
-        authMount.value
+        authMount.value, 
+        storePath.value
       );
     } catch (err) {
       notify.clear().error(err.message);
@@ -244,7 +273,8 @@ browser.runtime.onMessage.addListener( async function (message) {
     case 'fetch_token':
       await browser.storage.local.set({ vaultToken: message.token });
       await browser.storage.sync.set({ vaultAddress: message.address });
-      await querySecrets(message.address, message.token, message.policies);
+      const storePath = (await browser.storage.sync.get('storePath')).storePath;
+      await querySecrets(message.address, message.token, message.policies, storePath);
       break;
     case 'token_missing':
       notify.error('Failed to find Vault info from current tab');
