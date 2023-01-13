@@ -4,8 +4,8 @@
 const notify = new Notify(document.querySelector('#notify'));
 var resultList = document.getElementById('resultList');
 var searchInput = document.getElementById('vault-search');
-var currentUrl, vaultServerAdress, vaultToken, secretList;
-var currentTabId;
+var currentUrl, currentTabId;
+var vaultServerAddress, vaultToken, storePath, secretList;
 
 async function mainLoaded() {
   var tabs = await browser.tabs.query({ active: true, currentWindow: true });
@@ -31,8 +31,11 @@ async function mainLoaded() {
     );
   }
 
-  vaultServerAdress = (await browser.storage.sync.get('vaultAddress'))
+  vaultServerAddress = (await browser.storage.sync.get('vaultAddress'))
     .vaultAddress;
+
+  storePath = (await browser.storage.sync.get('storePath'))
+    .storePath;
 
   secretList = (await browser.storage.sync.get('secrets')).secrets;
   if (!secretList) {
@@ -47,12 +50,14 @@ async function querySecrets(searchString, manualSearch) {
   let anyMatch = false;
   notify.clear();
 
+  const storeComponents = storePathComponents(storePath);
   let matches = 0;
+
   for (const secret of secretList) {
     promises.push(
       (async function () {
         var secretsInPath = await fetch(
-          `${vaultServerAdress}/v1/secret/metadata/vaultPass/${secret}`,
+          `${vaultServerAddress}/v1/${storeComponents.root}/metadata/${storeComponents.subPath}/${secret}`,
           {
             method: 'LIST',
             headers: {
@@ -62,16 +67,18 @@ async function querySecrets(searchString, manualSearch) {
           }
         );
         if (!secretsInPath.ok) {
-          notify.error(`Token is not able to read ${secret}... Try re-login`, {
-            removeOption: true,
-          });
+          if (secretsInPath.status !== 404) {
+            notify.error(`Token is not able to read ${secret}... Try re-login`, {
+              removeOption: true,
+            });
+          }
           return;
         }
         for (const element of (await secretsInPath.json()).data.keys) {
           var pattern = new RegExp(element);
           var patternMatches = (pattern.test(searchString) || element.includes(searchString));
           if (patternMatches) {
-            const urlPath = `${vaultServerAdress}/v1/secret/data/vaultPass/${secret}${element}`;
+            const urlPath = `${vaultServerAddress}/v1/${storeComponents.root}/data/${storeComponents.subPath}/${secret}${element}`;
             const credentials = await getCredentials(urlPath);
             const credentialsSets = extractCredentialsSets(credentials.data.data);
 
