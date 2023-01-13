@@ -4,10 +4,10 @@
 const notify = new Notify(document.querySelector('#notify'));
 async function mainLoaded() {
   // get inputs from form elements, server URL, login and password
-  var vaultServer = document.getElementById('serverBox');
-  var login = document.getElementById('loginBox');
-  var auth = document.getElementById('authMount');
-  var store = document.getElementById('storeBox');
+  const vaultServer = document.getElementById('serverBox');
+  const login = document.getElementById('loginBox');
+  const auth = document.getElementById('authMount');
+  const store = document.getElementById('storeBox');
 
   // put listener on login button
   document
@@ -20,28 +20,28 @@ async function mainLoaded() {
     .getElementById('logoutButton')
     .addEventListener('click', logout, false);
 
-  var vaultServerAddress = (await browser.storage.sync.get('vaultAddress'))
+  const vaultServerAddress = (await browser.storage.sync.get('vaultAddress'))
     .vaultAddress;
   if (vaultServerAddress) {
     vaultServer.value = vaultServerAddress;
     vaultServer.parentNode.classList.add('is-dirty');
   }
-  var username = (await browser.storage.sync.get('username')).username;
+  const username = (await browser.storage.sync.get('username')).username;
   if (username) {
     login.value = username;
     login.parentNode.classList.add('is-dirty');
   }
-  var authMethod = (await browser.storage.sync.get('authMethod')).authMethod;
+  const authMethod = (await browser.storage.sync.get('authMethod')).authMethod;
   if (authMethod) {
     auth.value = authMethod;
     auth.parentNode.classList.add('is-dirty');
   }
-  var storePath = (await browser.storage.sync.get('storePath')).storePath;
+  const storePath = (await browser.storage.sync.get('storePath')).storePath;
   if (storePath) {
     store.value = storePath;
     store.parentNode.classList.add('is-dirty');
   }
-  var vaultToken = (await browser.storage.local.get('vaultToken')).vaultToken;
+  const vaultToken = (await browser.storage.local.get('vaultToken')).vaultToken;
   if (vaultToken) {
     try {
       await querySecrets(vaultServerAddress, vaultToken, null, storePath);
@@ -64,7 +64,7 @@ async function querySecrets(vaultServerAddress, vaultToken, policies, storePath)
 
   const storeComponents = storePathComponents(storePath);
 
-  var fetchListOfSecretDirs = await fetch(
+  const fetchListOfSecretDirs = await fetch(
     `${vaultServerAddress}/v1/${storeComponents.root}/metadata/${storeComponents.subPath}`,
     {
       method: 'LIST',
@@ -102,7 +102,7 @@ async function logout() {
 }
 
 async function displaySecrets(secrets, activeSecrets) {
-  var list = document.getElementById('secretList');
+  const list = document.getElementById('secretList');
   
   for (const secret of secrets) {
     // Create the list item:
@@ -139,30 +139,30 @@ async function displaySecrets(secrets, activeSecrets) {
 }
 
 async function secretChanged({ checkbox, item }) {
-  var activeSecrets = (await browser.storage.sync.get('secrets')).secrets;
+  let activeSecrets = (await browser.storage.sync.get('secrets')).secrets;
   if (!activeSecrets) {
     activeSecrets = [];
   }
 
   if (checkbox.checked) {
-    var vaultServerAddress = (await browser.storage.sync.get('vaultAddress'))
-      .vaultAddress;
-    var vaultToken = (await browser.storage.local.get('vaultToken')).vaultToken;
+    const vaultServerAddress = (await browser.storage.sync.get('vaultAddress'))
+        .vaultAddress;
+    const vaultToken = (await browser.storage.local.get('vaultToken')).vaultToken;
     if (!vaultToken) {
       throw new Error('secretChanged: Vault Token is empty after login');
     }
 
-    var storePath = (await browser.storage.sync.get('storePath')).storePath;
+    const storePath = (await browser.storage.sync.get('storePath')).storePath;
     const storeComponents = storePathComponents(storePath);
-    var fetchListOfSecretsForDir = await fetch(
-      `${vaultServerAddress}/v1/${storeComponents.root}/metadata/${storeComponents.subPath}/${checkbox.name}`,
-      {
-        method: 'LIST',
-        headers: {
-          'X-Vault-Token': vaultToken,
-          'Content-Type': 'application/json',
-        },
-      }
+    const fetchListOfSecretsForDir = await fetch(
+        `${vaultServerAddress}/v1/${storeComponents.root}/metadata/${storeComponents.subPath}/${checkbox.name}`,
+        {
+          method: 'LIST',
+          headers: {
+            'X-Vault-Token': vaultToken,
+            'Content-Type': 'application/json',
+          },
+        }
     );
     if (!fetchListOfSecretsForDir.ok) {
       checkbox.checked = false;
@@ -190,15 +190,15 @@ async function secretChanged({ checkbox, item }) {
 
 // invoked after user clicks "login to vault" button, if all fields filled in, and URL passed regexp check.
 async function authToVault(vaultServer, username, password, authMethod, storePath) {
-  var loginToVault = await fetch(
-    `${vaultServer}/v1/auth/${authMethod}/login/${username}`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ password: password }),
-    }
+  const loginToVault = await fetch(
+      `${vaultServer}/v1/auth/${authMethod}/login/${username}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({password: password}),
+      }
   );
   if (!loginToVault.ok) {
     notify.error(`
@@ -217,11 +217,11 @@ async function authToVault(vaultServer, username, password, authMethod, storePat
 
 async function authButtonClick() {
   // get inputs from form elements, server URL, login and password
-  var vaultServer = document.getElementById('serverBox');
-  var login = document.getElementById('loginBox');
-  var authMount = document.getElementById('authMount');
-  var pass = document.getElementById('passBox');
-  var storePath = document.getElementById('storeBox');
+  const vaultServer = document.getElementById('serverBox');
+  const login = document.getElementById('loginBox');
+  const authMount = document.getElementById('authMount');
+  const pass = document.getElementById('passBox');
+  const storePath = document.getElementById('storeBox');
   // verify input not empty. TODO: verify correct URL format.
   if (
     vaultServer.value.length > 0 &&
@@ -254,9 +254,9 @@ async function authButtonClick() {
 }
 
 async function tokenGrabberClick() {
-  var tabs = await browser.tabs.query({ active: true, currentWindow: true });
+  const tabs = await browser.tabs.query({active: true, currentWindow: true});
   for (let tabIndex = 0; tabIndex < tabs.length; tabIndex++) {
-    var tab = tabs[tabIndex];
+    const tab = tabs[tabIndex];
     if (tab.url) {
       browser.tabs.sendMessage(tab.id, {
         message: 'fetch_token',

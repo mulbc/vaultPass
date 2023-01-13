@@ -61,11 +61,11 @@ function findUsernameNodeIn(parentNode, checkVisibility) {
     '[type="text"]',
   ];
 
-  for (let selector of matches) {
+  for (const selector of matches) {
     const allUsernameNodes = parentNode.querySelectorAll(selector);
 
     let usernameNode = null;
-    for (let node of allUsernameNodes) {
+    for (const node of allUsernameNodes) {
       if (checkVisibility ? node.offsetParent : true) {
         usernameNode = node;
         break;
@@ -96,7 +96,7 @@ function fillIn(node, value) {
 function findPasswordInput() {
   // eslint-disable-next-line quotes
   const passwordNodes = document.querySelectorAll("input[type='password']");
-  for (let node of passwordNodes) {
+  for (const node of passwordNodes) {
     if (node.offsetParent) return node;
   }
 
