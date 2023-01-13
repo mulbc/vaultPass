@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-/* global browser Notify */
+/* global browser Notify storePathComponents */
 
 const notify = new Notify(document.querySelector('#notify'));
 const resultList = document.getElementById('resultList');
@@ -41,7 +41,7 @@ async function mainLoaded() {
   if (!secretList) {
     secretList = [];
   }
-  querySecrets(searchRegex, (searchInput.value.length != 0));
+  querySecrets(currentUrl, (searchInput.value.length != 0));
 }
 
 async function querySecrets(searchString, manualSearch) {
@@ -60,14 +60,14 @@ async function querySecrets(searchString, manualSearch) {
     promises.push(
       (async function () {
         const secretsInPath = await fetch(
-            `${vaultServerAddress}/v1/${storeComponents.root}/metadata/${storeComponents.subPath}/${secret}`,
-            {
-              method: 'LIST',
-              headers: {
-                'X-Vault-Token': vaultToken,
-                'Content-Type': 'application/json',
-              },
-            }
+          `${vaultServerAddress}/v1/${storeComponents.root}/metadata/${storeComponents.subPath}/${secret}`,
+          {
+            method: 'LIST',
+            headers: {
+              'X-Vault-Token': vaultToken,
+              'Content-Type': 'application/json',
+            },
+          }
         );
         if (!secretsInPath.ok) {
           if (secretsInPath.status !== 404) {
@@ -90,7 +90,7 @@ async function querySecrets(searchString, manualSearch) {
 
               matches++;
             }
-            
+
             notify.clear();
           }
         }
@@ -102,22 +102,28 @@ async function querySecrets(searchString, manualSearch) {
     await Promise.all(promises);
 
     if (matches > 0) {
-      chrome.action.setBadgeText({ text: `${matches}`, tabId: currentTabId });
+      browser.action.setBadgeText({ text: `${matches}`, tabId: currentTabId });
     } else {
-      chrome.action.setBadgeText({ text: ``, tabId: currentTabId });
-      notify.info('No matching key found for this page.', {
-        removeOption: false,
-      });
+      browser.action.setBadgeText({ text: '', tabId: currentTabId });
+      if (!manualSearch) {
+        notify.info('No matching key found for this page.', {
+          removeOption: false,
+        });
+      } else {
+        notify.info('No matching key found for the search', {
+          removeOption: false,
+        });
+      }
     }
   } catch (err) {
-    chrome.action.setBadgeText({ text: ``, tabId: currentTabId });
+    browser.action.setBadgeText({ text: '', tabId: currentTabId });
     notify.clear().error(err.message);
   }
 }
 
 const searchHandler = function (e) {
   if (e.key === 'Enter') {
-    mainLoaded()
+    mainLoaded();
   }
 };
 
@@ -132,10 +138,10 @@ function extractCredentialsSets(data) {
       const passwordField = 'password' + key.substring(8);
       if (data[passwordField]) {
         credentials.push(
-        { 
-          username: data[key],
-          password: data['password' + key.substring(8)]
-        });
+          {
+            username: data[key],
+            password: data['password' + key.substring(8)]
+          });
       }
     }
   }
@@ -229,6 +235,7 @@ async function fillCredentialsInBrowser(username, password) {
         message: 'fill_creds',
         username: username,
         password: password,
+        isUserTriggered: true
       });
       break;
     }
