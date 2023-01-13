@@ -2,15 +2,15 @@
 /* global browser Notify */
 
 const notify = new Notify(document.querySelector('#notify'));
-var resultList = document.getElementById('resultList');
-var searchInput = document.getElementById('vault-search');
+const resultList = document.getElementById('resultList');
+const searchInput = document.getElementById('vault-search');
 var currentUrl, currentTabId;
 var vaultServerAddress, vaultToken, storePath, secretList;
 
 async function mainLoaded() {
-  var tabs = await browser.tabs.query({ active: true, currentWindow: true });
+  const tabs = await browser.tabs.query({active: true, currentWindow: true});
   for (let tabIndex = 0; tabIndex < tabs.length; tabIndex++) {
-    var tab = tabs[tabIndex];
+    const tab = tabs[tabIndex];
     if (tab.url) {
       currentTabId = tab.id;
       currentUrl = tab.url;
@@ -18,7 +18,7 @@ async function mainLoaded() {
     }
   }
 
-  if (searchInput.value.length != 0) {
+  if (searchInput.value.length !== 0) {
     currentUrl = searchInput.value;
   }
 
@@ -45,9 +45,12 @@ async function mainLoaded() {
 }
 
 async function querySecrets(searchString, manualSearch) {
+  if (searchString.length === 0) {
+    searchString = currentUrl;
+  }
+
   resultList.textContent = '';
-  var promises = [];
-  let anyMatch = false;
+  const promises = [];
   notify.clear();
 
   const storeComponents = storePathComponents(storePath);
@@ -56,15 +59,15 @@ async function querySecrets(searchString, manualSearch) {
   for (const secret of secretList) {
     promises.push(
       (async function () {
-        var secretsInPath = await fetch(
-          `${vaultServerAddress}/v1/${storeComponents.root}/metadata/${storeComponents.subPath}/${secret}`,
-          {
-            method: 'LIST',
-            headers: {
-              'X-Vault-Token': vaultToken,
-              'Content-Type': 'application/json',
-            },
-          }
+        const secretsInPath = await fetch(
+            `${vaultServerAddress}/v1/${storeComponents.root}/metadata/${storeComponents.subPath}/${secret}`,
+            {
+              method: 'LIST',
+              headers: {
+                'X-Vault-Token': vaultToken,
+                'Content-Type': 'application/json',
+              },
+            }
         );
         if (!secretsInPath.ok) {
           if (secretsInPath.status !== 404) {
@@ -75,14 +78,14 @@ async function querySecrets(searchString, manualSearch) {
           return;
         }
         for (const element of (await secretsInPath.json()).data.keys) {
-          var pattern = new RegExp(element);
-          var patternMatches = (pattern.test(searchString) || element.includes(searchString));
+          const pattern = new RegExp(element);
+          const patternMatches = (pattern.test(searchString) || element.includes(searchString));
           if (patternMatches) {
             const urlPath = `${vaultServerAddress}/v1/${storeComponents.root}/data/${storeComponents.subPath}/${secret}${element}`;
             const credentials = await getCredentials(urlPath);
             const credentialsSets = extractCredentialsSets(credentials.data.data);
 
-            for (let item of credentialsSets) {
+            for (const item of credentialsSets) {
               addCredentialsToList(item, element, resultList);
 
               matches++;
@@ -122,11 +125,11 @@ searchInput.addEventListener('keyup', searchHandler);
 
 function extractCredentialsSets(data) {
   const keys = Object.keys(data);
-  let credentials = [];
+  const credentials = [];
 
-  for (let key of keys) {
+  for (const key of keys) {
     if (key.startsWith('username')) {
-      let passwordField = 'password' + key.substring(8);
+      const passwordField = 'password' + key.substring(8);
       if (data[passwordField]) {
         credentials.push(
         { 
@@ -216,9 +219,9 @@ async function getCredentials(urlPath) {
 }
 
 async function fillCredentialsInBrowser(username, password) {
-  var tabs = await browser.tabs.query({ active: true, currentWindow: true });
+  const tabs = await browser.tabs.query({active: true, currentWindow: true});
   for (let tabIndex = 0; tabIndex < tabs.length; tabIndex++) {
-    var tab = tabs[tabIndex];
+    const tab = tabs[tabIndex];
     if (tab.url) {
       // tabs.sendMessage(integer tabId, any message, optional object options, optional function responseCallback)
 
@@ -233,9 +236,9 @@ async function fillCredentialsInBrowser(username, password) {
 }
 
 async function copyStringToClipboard(string) {
-  var tabs = await browser.tabs.query({ active: true, currentWindow: true });
+  const tabs = await browser.tabs.query({active: true, currentWindow: true});
   for (let tabIndex = 0; tabIndex < tabs.length; tabIndex++) {
-    var tab = tabs[tabIndex];
+    const tab = tabs[tabIndex];
     if (tab.url) {
       browser.tabs.sendMessage(tab.id, {
         message: 'copy_to_clipboard',

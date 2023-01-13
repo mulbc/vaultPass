@@ -94,11 +94,11 @@ async function autoFillSecrets(message, sender) {
 
   let loginCount = 0;
 
-  for (let secret of secretList) {
+  for (const secret of secretList) {
     const secretKeys = await vault.list(`/${storeComponents.root}/metadata/${storeComponents.subPath}/${secret}`);
-    for (let key of secretKeys.data.keys) {
-      var pattern = new RegExp(key);
-      var patternMatches = pattern.test(hostname);
+    for (const key of secretKeys.data.keys) {
+      const pattern = new RegExp(key);
+      const patternMatches = pattern.test(hostname);
       // If the key is an exact match to the current hostname --> autofill
       if (hostname === clearHostname(key)) {
         const credentials = await vault.get(
