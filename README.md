@@ -21,17 +21,48 @@ The token grabber feature allows this plugin to effectively use any Vault authen
 
 ## Requirements
 
-Vault needs to be prepared to use this extention.
-This extention expects secrets to be saved in the 'secret' mount path (the default KV store).
-Version 1 and 2 of the KV store are supported - only difference are the Vault policies you will have to write.
-The path in this mount should be `/vaultPass/[someOrg]/url` where:
+1. Vault needs to be prepared to use this extension.
+Usernames and passwords we wish to retrieve from Vault need to be defined in a KV store.
+Version 1 and 2 of the KV store are supported - only differences are the Vault policies you will have to write.
 
-- `someOrg` will be some organisational level in your company to separate access levels
-  - You can activate and deactivate these "folders" in options
-- `url` is a URL or part of it that the credentials should match for
-  - Be aware that \* characters (and potentially others...) may not work!
-  - It should have _at least_ the keys `username` and `password` with the respective information
-- Get a Token via the options page of this extention
+2. By default, secrets should be created using the following path template:
+ `/secret/vaultPass/[someOrg]/[url]` where:
+
+   - `someOrg` will be some organisational level in your company to separate access levels
+     - You can activate and deactivate these "folders" in options
+   - `url` is a RegEx used to match the website's URL that the credentials are for
+     - Be aware that \*, ?, ., \\, ^, $ (and potentially others...) have a special meaning when in a regular expression hence might not trigger the behaviour that you might expect. Check your regular expression using an online tools like regex101.com if in doubt.
+
+  Examples: 
+  `/secret/vaultPass/marketing/github.com` to define credentials for any URLs that contains `github.com`
+  `/secret/vaultPass/accounting/api.*.github.com(.au){0,1}` to define credentials for any URLs that contains `api` followed by anything then ends with `github.com` or `gitlab.com.au`
+     
+3. Each secret should have _at least_ one `username` key and one `password` key with the respective information.
+
+Example:
+```
+{
+  "username": "john.smith@internet.com",
+  "password": "mySecretPassword"
+}
+```
+4. However, if you have more than one valid set of credentials for the same website, you can define multiple pairs of username/password combinations. Just add them with an additional suffix ensuring that each username has a corresponding password.
+
+ Example:
+```
+{
+  "username": "myusername",
+  "password": "mypassword",
+  "username.2": "other username",
+  "password.2": "other password",
+  "username for test": "test username",
+  "password for test": "test password"
+}
+```
+5. Get a Token via the options page of this extension
+
+**_NOTE:_** You can now store your credentials in any KV store within your Vault instance, not just `/secret/vaultPass`
+Just specify your custom secrets' path in the Options page of the extension.
 
 ## Example policies
 
@@ -40,7 +71,7 @@ There are two short docs to get your started with access policies:
 - [KV version 1](docs/access_policies_v1.md)
 - [KV version 2](docs/access_policies_v2.md)
 
-If you just installed Vault - you propably have Version 2.
+If you just installed Vault - you probably have Version 2.
 
 ## TODO
 
