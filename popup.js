@@ -100,7 +100,7 @@ const searchHandler = function (e) {
   }
 };
 
-searchInput.addEventListener('keypress', searchHandler);
+searchInput.addEventListener('keyup', searchHandler);
 
 function addCredentialsToList(credentials, credentialName, list) {
   const item = document.createElement('li');
