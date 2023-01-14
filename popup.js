@@ -5,6 +5,7 @@ const notify = new Notify(document.querySelector('#notify'));
 var resultList = document.getElementById('resultList');
 var searchInput = document.getElementById('vault-search');
 var searchRegex, vaultServerAdress, vaultToken, secretList;
+let searchKickoff;
 
 async function mainLoaded() {
   var tabs = await browser.tabs.query({ active: true, currentWindow: true });
@@ -95,12 +96,15 @@ async function querySecrets(searchString, manualSearch) {
 }
 
 const searchHandler = function (e) {
+  clearTimeout(searchKickoff);
   if (e.key === 'Enter') {
     mainLoaded()
+  } else {
+    searchKickoff = setTimeout(() => mainLoaded(), 1000);
   }
 };
 
-searchInput.addEventListener('keypress', searchHandler);
+searchInput.addEventListener('keyup', searchHandler);
 
 function addCredentialsToList(credentials, credentialName, list) {
   const item = document.createElement('li');
