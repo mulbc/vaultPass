@@ -5,6 +5,8 @@
 
 GIT_ROOT=$(git rev-parse --show-toplevel)
 
+docker pod rm -f vaultpass-dev || true
+
 docker run \
     --cap-add=IPC_LOCK \
     --detach \
@@ -29,7 +31,7 @@ VAULT_SETUP="
 vault login myroot
 
 # Create example secret for google.com domains
-vault kv put secret/vaultPass/admin/google.com username=testUser password=unsafe
+vault kv put secret/vaultPass/admin/google.com username=testUser password=unsafe username2=testUser2 password2=unsafe2
 vault kv put secret/vaultPass/denied/google.com username=testUser password=unsafe
 
 # Enable userpass auth and create example set
