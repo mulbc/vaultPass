@@ -69,7 +69,7 @@ function storePathComponents(storePath) {
   return {
     root: storeRoot,
     subPath: storeSubPath
-  }
+  };
 }
 
 function clearHostname(hostname) {
@@ -117,7 +117,7 @@ async function autoFillSecrets(message, sender) {
     }
   }
   if (loginCount > 0) {
-    chrome.action.setBadgeText({ text: `*`, tabId: sender.tab.id });
+    chrome.action.setBadgeText({ text: '*', tabId: sender.tab.id });
   }
 }
 

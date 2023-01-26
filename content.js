@@ -38,7 +38,11 @@ function handleCopyToClipboard(request) {
   }
 }
 
-function findUsernameNodeIn(parentNode, checkVisibility, isUserTriggered = false) {
+function findUsernameNodeIn(
+  parentNode,
+  checkVisibility,
+  isUserTriggered = false
+) {
   const matches = [
     '[autocomplete="email"]',
     '[autocomplete="username"]',
@@ -63,7 +67,7 @@ function findUsernameNodeIn(parentNode, checkVisibility, isUserTriggered = false
   if (parentNode instanceof HTMLFormElement || isUserTriggered) {
     matches.push('[type="text"]');
   }
-  
+
   for (const selector of matches) {
     const allUsernameNodes = parentNode.querySelectorAll(selector);
 
@@ -77,9 +81,9 @@ function findUsernameNodeIn(parentNode, checkVisibility, isUserTriggered = false
     if (usernameNode) {
       return usernameNode;
     }
-   }
+  }
 
-   return null;
+  return null;
 }
 
 function createEvent(name) {
@@ -133,9 +137,9 @@ function handleFetchToken() {
       continue;
     }
     if (
-      Object.prototype.hasOwnProperty.call(element,'token') &&
-      Object.prototype.hasOwnProperty.call(element,'ttl') &&
-      Object.prototype.hasOwnProperty.call(element,'policies')
+      Object.prototype.hasOwnProperty.call(element, 'token') &&
+      Object.prototype.hasOwnProperty.call(element, 'ttl') &&
+      Object.prototype.hasOwnProperty.call(element, 'policies')
     ) {
       browser.runtime.sendMessage({
         type: 'fetch_token',
