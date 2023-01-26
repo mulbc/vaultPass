@@ -8,7 +8,7 @@ var currentUrl, currentTabId;
 var vaultServerAddress, vaultToken, storePath, secretList;
 
 async function mainLoaded() {
-  const tabs = await browser.tabs.query({active: true, currentWindow: true});
+  const tabs = await browser.tabs.query({ active: true, currentWindow: true });
   for (let tabIndex = 0; tabIndex < tabs.length; tabIndex++) {
     const tab = tabs[tabIndex];
     if (tab.url) {
@@ -34,14 +34,13 @@ async function mainLoaded() {
   vaultServerAddress = (await browser.storage.sync.get('vaultAddress'))
     .vaultAddress;
 
-  storePath = (await browser.storage.sync.get('storePath'))
-    .storePath;
+  storePath = (await browser.storage.sync.get('storePath')).storePath;
 
   secretList = (await browser.storage.sync.get('secrets')).secrets;
   if (!secretList) {
     secretList = [];
   }
-  querySecrets(currentUrl, (searchInput.value.length != 0));
+  querySecrets(currentUrl, searchInput.value.length != 0);
 }
 
 async function querySecrets(searchString, manualSearch) {
@@ -71,19 +70,25 @@ async function querySecrets(searchString, manualSearch) {
         );
         if (!secretsInPath.ok) {
           if (secretsInPath.status !== 404) {
-            notify.error(`Token is not able to read ${secret}... Try re-login`, {
-              removeOption: true,
-            });
+            notify.error(
+              `Token is not able to read ${secret}... Try re-login`,
+              {
+                removeOption: true,
+              }
+            );
           }
           return;
         }
         for (const element of (await secretsInPath.json()).data.keys) {
           const pattern = new RegExp(element);
-          const patternMatches = (pattern.test(searchString) || element.includes(searchString));
+          const patternMatches =
+            pattern.test(searchString) || element.includes(searchString);
           if (patternMatches) {
             const urlPath = `${vaultServerAddress}/v1/${storeComponents.root}/data/${storeComponents.subPath}/${secret}${element}`;
             const credentials = await getCredentials(urlPath);
-            const credentialsSets = extractCredentialsSets(credentials.data.data);
+            const credentialsSets = extractCredentialsSets(
+              credentials.data.data
+            );
 
             for (const item of credentialsSets) {
               addCredentialsToList(item, element, resultList);
@@ -137,11 +142,10 @@ function extractCredentialsSets(data) {
     if (key.startsWith('username')) {
       const passwordField = 'password' + key.substring(8);
       if (data[passwordField]) {
-        credentials.push(
-          {
-            username: data[key],
-            password: data['password' + key.substring(8)]
-          });
+        credentials.push({
+          username: data[key],
+          password: data['password' + key.substring(8)],
+        });
       }
     }
   }
@@ -225,7 +229,7 @@ async function getCredentials(urlPath) {
 }
 
 async function fillCredentialsInBrowser(username, password) {
-  const tabs = await browser.tabs.query({active: true, currentWindow: true});
+  const tabs = await browser.tabs.query({ active: true, currentWindow: true });
   for (let tabIndex = 0; tabIndex < tabs.length; tabIndex++) {
     const tab = tabs[tabIndex];
     if (tab.url) {
@@ -235,7 +239,7 @@ async function fillCredentialsInBrowser(username, password) {
         message: 'fill_creds',
         username: username,
         password: password,
-        isUserTriggered: true
+        isUserTriggered: true,
       });
       break;
     }
@@ -243,7 +247,7 @@ async function fillCredentialsInBrowser(username, password) {
 }
 
 async function copyStringToClipboard(string) {
-  const tabs = await browser.tabs.query({active: true, currentWindow: true});
+  const tabs = await browser.tabs.query({ active: true, currentWindow: true });
   for (let tabIndex = 0; tabIndex < tabs.length; tabIndex++) {
     const tab = tabs[tabIndex];
     if (tab.url) {

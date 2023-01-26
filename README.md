@@ -22,33 +22,36 @@ The token grabber feature allows this plugin to effectively use any Vault authen
 ## Requirements
 
 1. Vault needs to be prepared to use this extension.
-Usernames and passwords we wish to retrieve from Vault need to be defined in a KV store.
-Version 1 and 2 of the KV store are supported - only differences are the Vault policies you will have to write.
+   Usernames and passwords we wish to retrieve from Vault need to be defined in a KV store.
+   Version 1 and 2 of the KV store are supported - only differences are the Vault policies you will have to write.
 
 2. By default, secrets should be created using the following path template:
- `/secret/vaultPass/[someOrg]/[url]` where:
+   `/secret/vaultPass/[someOrg]/[url]` where:
 
    - `someOrg` will be some organisational level in your company to separate access levels
      - You can activate and deactivate these "folders" in options
    - `url` is a RegEx used to match the website's URL that the credentials are for
      - Be aware that \*, ?, ., \\, ^, $ (and potentially others...) have a special meaning when in a regular expression hence might not trigger the behaviour that you might expect. Check your regular expression using an online tools like regex101.com if in doubt.
 
-  Examples: 
-  `/secret/vaultPass/marketing/github.com` to define credentials for any URLs that contains `github.com`
-  `/secret/vaultPass/accounting/api.*.github.com(.au){0,1}` to define credentials for any URLs that contains `api` followed by anything then ends with `github.com` or `gitlab.com.au`
-     
+Examples:
+`/secret/vaultPass/marketing/github.com` to define credentials for any URLs that contains `github.com`
+`/secret/vaultPass/accounting/api.*.github.com(.au){0,1}` to define credentials for any URLs that contains `api` followed by anything then ends with `github.com` or `gitlab.com.au`
+
 3. Each secret should have _at least_ one `username` key and one `password` key with the respective information.
 
 Example:
+
 ```
 {
   "username": "john.smith@internet.com",
   "password": "mySecretPassword"
 }
 ```
+
 4. However, if you have more than one valid set of credentials for the same website, you can define multiple pairs of username/password combinations. Just add them with an additional suffix ensuring that each username has a corresponding password.
 
- Example:
+Example:
+
 ```
 {
   "username": "myusername",
@@ -59,6 +62,7 @@ Example:
   "password for test": "test password"
 }
 ```
+
 5. Get a Token via the options page of this extension
 
 **_NOTE:_** You can now store your credentials in any KV store within your Vault instance, not just `/secret/vaultPass`
@@ -145,7 +149,7 @@ Success! Data written to: auth/ldap/groups/admin_staff
 ```
 
 Afterwards you can login to this Vault instance with the VaultPass extension like this:
-![VaultPass dev login](docs/VaultPassDevLogin.png "VaultPass dev login")
+![VaultPass dev login](docs/VaultPassDevLogin.png 'VaultPass dev login')
 
 Use `foo` as the password for the `mitchellh` user.
 
@@ -177,7 +181,7 @@ token_meta_username    hermes
 As you can see, we logged in as "hermes" who is member of the "admin_staff" group and we get the default and admin policy applied. If we try the same as fry, we only get the default policy applied:
 
 ```bash
-$ docker exec -it --env 'VAULT_ADDR=http://127.0.0.1:8200' dev-vault sh -c 'vault login -method=ldap username=fry'  
+$ docker exec -it --env 'VAULT_ADDR=http://127.0.0.1:8200' dev-vault sh -c 'vault login -method=ldap username=fry'
 Password (will be hidden):
 Success! You are now authenticated. The token information displayed below
 is already stored in the token helper. You do NOT need to run "vault login"
