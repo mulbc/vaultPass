@@ -20,13 +20,14 @@
     }
   ],
   "background": {
-    "scripts": ["background.js"],
+    "scripts": ["browser-polyfill.min.js", "background.js"],
     "persistent": false
   },
   "permissions": [
     "activeTab",
     "storage",
     "clipboardWrite",
+    "idle",
     "http://*/*",
     "https://*/*"
   ],

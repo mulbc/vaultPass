@@ -51,6 +51,10 @@ function findUsernameNodeIn(
     'input[id="userid"]',
     'input[id="login"]',
     'input[id="email"]',
+    'textarea[id="username"]',
+    'textarea[id="userid"]',
+    'textarea[id="login"]',
+    'textarea[id="email"]',
     '[type="email"]',
     '[name="user_name"]',
     '[name="user"]',
@@ -73,7 +77,7 @@ function findUsernameNodeIn(
 
     let usernameNode = null;
     for (const node of allUsernameNodes) {
-      if (checkVisibility ? node.offsetParent : true) {
+      if (checkVisibility ? isVisible(node) : true) {
         usernameNode = node;
         break;
       }
@@ -100,11 +104,30 @@ function fillIn(node, value) {
   node.blur();
 }
 
+function isVisible(node) {
+  if (!node.offsetParent) {
+    return false;
+  }
+
+  if (node.style.display === 'none') {
+    return false;
+  }
+
+  if (node.style.visibility === 'hidden') {
+    return false;
+  }
+
+  const computedStyle = window.getComputedStyle(node);
+  const visibility = computedStyle.getPropertyValue('visibility');
+
+  return visibility !== 'hidden';
+}
+
 function findPasswordInput() {
   // eslint-disable-next-line quotes
   const passwordNodes = document.querySelectorAll("input[type='password']");
   for (const node of passwordNodes) {
-    if (node.offsetParent) return node;
+    if (isVisible(node)) return node;
   }
 
   return passwordNodes.length > 0 ? passwordNodes[0] : null;
@@ -121,7 +144,7 @@ function handleFillCredits(request) {
   // Go completely crazy and wild guess any visible input field for the username if empty formNode
   // https://stackoverflow.com/a/21696585
   const usernameNode = formNode
-    ? findUsernameNodeIn(formNode)
+    ? findUsernameNodeIn(formNode, true)
     : findUsernameNodeIn(document, true, request.isUserTriggered);
   if (!usernameNode) return;
 

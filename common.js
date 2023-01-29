@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 /* eslint-disable no-unused-vars */
-/* global browser */
+/* global browser chrome */
 
 function storePathComponents(storePath) {
   let path = 'secret/vaultPass';
@@ -16,4 +16,8 @@ function storePathComponents(storePath) {
     root: storeRoot,
     subPath: storeSubPath,
   };
+}
+
+if (!browser.browserAction) {
+  browser.browserAction = chrome.browserAction ?? chrome.action;
 }

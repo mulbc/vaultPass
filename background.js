@@ -1,27 +1,37 @@
 /* eslint-disable no-console */
 /* global chrome */
 
-function storageGetterProvider(storageType) {
-  return function (key, defaultValue) {
-    return new Promise(function (resolve, reject) {
-      try {
-        chrome.storage[storageType].get([key], function (result) {
-          const value = result[key] || defaultValue || null;
-          resolve(value);
-        });
-      } catch (error) {
-        reject(error);
-      }
-    });
-  };
+const idealTokenTTL = '24h';
+
+var tokenRenewalIntervalId;
+
+if (!chrome.browserAction) {
+  chrome.browserAction = chrome.action;
 }
 
 const storage = {
+  storageGetterProvider: (storageType) => {
+    return function (key, defaultValue) {
+      return new Promise(function (resolve, reject) {
+        try {
+          chrome.storage[storageType].get([key], function (result) {
+            const value = result[key] || defaultValue || null;
+            resolve(value);
+          });
+        } catch (error) {
+          reject(error);
+        }
+      });
+    };
+  },
+
   local: {
-    get: storageGetterProvider('local'),
+    get: (key, defaultValue) =>
+      storage.storageGetterProvider('local')(key, defaultValue),
   },
   sync: {
-    get: storageGetterProvider('sync'),
+    get: (key, defaultValue) =>
+      storage.storageGetterProvider('sync')(key, defaultValue),
   },
 };
 
@@ -32,20 +42,24 @@ class Vault {
     this.base = `${this.address}/v1`;
   }
 
-  async request(method, endpoint) {
+  async request(method, endpoint, content = null) {
     const res = await fetch(this.base + endpoint, {
       method: method.toUpperCase(),
       headers: {
         'X-Vault-Token': this.token,
         'Content-Type': 'application/json',
       },
+      body: content != null ? JSON.stringify(content) : null,
     });
 
-    if (!res.ok) throw new Error(`Error calling: ${method.toUpperCase()} ${this.base}${endpoint} -> HTTP ${res.status} - ${res.statusText}`);
+    if (!res.ok)
+      throw new Error(
+        `Error calling: ${method.toUpperCase()} ${
+          this.base
+        }${endpoint} -> HTTP ${res.status} - ${res.statusText}`
+      );
 
-    const json = await res.json();
-
-    return json;
+    return await res.json();
   }
 
   list(endpoint) {
@@ -54,6 +68,10 @@ class Vault {
 
   get(endpoint) {
     return this.request('GET', endpoint);
+  }
+
+  post(endpoint, content) {
+    return this.request('POST', endpoint, content);
   }
 }
 
@@ -64,11 +82,12 @@ function storePathComponents(storePath) {
   }
   const pathComponents = path.split('/');
   const storeRoot = pathComponents[0];
-  const storeSubPath = pathComponents.length > 0 ? pathComponents.slice(1).join('/') : '';
+  const storeSubPath =
+    pathComponents.length > 0 ? pathComponents.slice(1).join('/') : '';
 
   return {
     root: storeRoot,
-    subPath: storeSubPath
+    subPath: storeSubPath,
   };
 }
 
@@ -85,7 +104,7 @@ async function autoFillSecrets(message, sender) {
   const storePath = await storage.sync.get('storePath');
   const storeComponents = storePathComponents(storePath);
 
-  if (!vaultAddress || !vaultAddress) return;
+  if (!vaultToken || !vaultAddress) return;
 
   const url = new URL(sender.tab.url);
   const hostname = clearHostname(url.hostname);
@@ -95,7 +114,9 @@ async function autoFillSecrets(message, sender) {
   let loginCount = 0;
 
   for (const secret of secretList) {
-    const secretKeys = await vault.list(`/${storeComponents.root}/metadata/${storeComponents.subPath}/${secret}`);
+    const secretKeys = await vault.list(
+      `/${storeComponents.root}/metadata/${storeComponents.subPath}/${secret}`
+    );
     for (const key of secretKeys.data.keys) {
       const pattern = new RegExp(key);
       const patternMatches = pattern.test(hostname);
@@ -117,12 +138,97 @@ async function autoFillSecrets(message, sender) {
     }
   }
   if (loginCount > 0) {
-    chrome.action.setBadgeText({ text: '*', tabId: sender.tab.id });
+    chrome.browserAction.setBadgeText({ text: '*', tabId: sender.tab.id });
+  }
+}
+
+async function renewToken(force = false) {
+  const vaultToken = await storage.local.get('vaultToken');
+  const vaultAddress = await storage.sync.get('vaultAddress');
+
+  if (vaultToken) {
+    try {
+      const vault = new Vault(vaultToken, vaultAddress);
+      const token = await vault.get('/auth/token/lookup-self');
+
+      console.log(
+        `${new Date().toLocaleString()} Token will expire in ${
+          token.data.ttl
+        } seconds`
+      );
+      if (token.data.ttl > 3600) {
+        refreshTokenListener(1800000);
+      } else {
+        refreshTokenListener((token.data.ttl / 2) * 1000);
+      }
+
+      if (force || token.data.ttl <= 60) {
+        console.log(`${new Date().toLocaleString()} Renewing Token...`);
+        const newToken = await vault.post('/auth/token/renew-self', {
+          increment: idealTokenTTL,
+        });
+        console.log(
+          `${new Date().toLocaleString()} Token renewed. It will expire in ${
+            newToken.auth.lease_duration
+          } seconds`
+        );
+      }
+
+      await chrome.browserAction.setBadgeBackgroundColor({ color: '#1c98ed' });
+    } catch (e) {
+      console.log(e);
+      await chrome.browserAction.setBadgeBackgroundColor({ color: '#FF0000' });
+      await chrome.browserAction.setBadgeText({ text: '!' });
+
+      refreshTokenListener();
+    }
+  }
+}
+
+function refreshTokenListener(interval = 30000) {
+  if (tokenRenewalIntervalId) {
+    clearInterval(tokenRenewalIntervalId);
+  }
+
+  tokenRenewalIntervalId = setInterval(async () => {
+    await renewToken();
+  }, interval);
+}
+
+async function newStateHandler(newState) {
+  console.log(`${new Date().toLocaleString()} ${newState}`);
+  if (newState === 'active') {
+    await renewToken(false);
+  }
+
+  if (newState === 'locked') {
+    await renewToken(true);
+  }
+}
+
+function setupIdleListener() {
+  if (!chrome.idle.onStateChanged.hasListener(newStateHandler)) {
+    chrome.idle.onStateChanged.addListener(newStateHandler);
   }
 }
 
 chrome.runtime.onMessage.addListener(function (message, sender) {
   if (message.type === 'auto_fill_secrets') {
     autoFillSecrets(message, sender).catch(console.error);
+    setupIdleListener();
   }
+
+  if (message.type === 'auto_renew_token') {
+    refreshTokenListener();
+  }
+});
+
+chrome.runtime.onInstalled.addListener(() => {
+  refreshTokenListener();
+  setupIdleListener();
+});
+
+chrome.runtime.onStartup.addListener(() => {
+  refreshTokenListener();
+  setupIdleListener();
 });

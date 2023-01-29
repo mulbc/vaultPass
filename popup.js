@@ -1,4 +1,5 @@
 /* eslint-disable no-console */
+/* eslint-disable no-prototype-builtins */
 /* global browser Notify storePathComponents */
 
 const notify = new Notify(document.querySelector('#notify'));
@@ -40,7 +41,7 @@ async function mainLoaded() {
   if (!secretList) {
     secretList = [];
   }
-  querySecrets(currentUrl, searchInput.value.length != 0);
+  await querySecrets(currentUrl, searchInput.value.length !== 0);
 }
 
 async function querySecrets(searchString, manualSearch) {
@@ -70,12 +71,9 @@ async function querySecrets(searchString, manualSearch) {
         );
         if (!secretsInPath.ok) {
           if (secretsInPath.status !== 404) {
-            notify.error(
-              `Token is not able to read ${secret}... Try re-login`,
-              {
-                removeOption: true,
-              }
-            );
+            notify.error(`Unable to read ${secret}... Try re-login`, {
+              removeOption: true,
+            });
           }
           return;
         }
@@ -107,9 +105,12 @@ async function querySecrets(searchString, manualSearch) {
     await Promise.all(promises);
 
     if (matches > 0) {
-      browser.action.setBadgeText({ text: `${matches}`, tabId: currentTabId });
+      browser.browserAction.setBadgeText({
+        text: `${matches}`,
+        tabId: currentTabId,
+      });
     } else {
-      browser.action.setBadgeText({ text: '', tabId: currentTabId });
+      browser.browserAction.setBadgeText({ text: '', tabId: currentTabId });
       if (!manualSearch) {
         notify.info('No matching key found for this page.', {
           removeOption: false,
@@ -121,7 +122,7 @@ async function querySecrets(searchString, manualSearch) {
       }
     }
   } catch (err) {
-    browser.action.setBadgeText({ text: '', tabId: currentTabId });
+    browser.browserAction.setBadgeText({ text: '', tabId: currentTabId });
     notify.clear().error(err.message);
   }
 }
@@ -146,15 +147,15 @@ function extractCredentialsSets(data) {
           username: data[key],
           password: data['password' + key.substring(8)],
           title: data.hasOwnProperty('title' + key.substring(8))
-              ? data['title' + key.substring(8)]
-              : data.hasOwnProperty('title')
-                  ? data['title']
-                  : '',
+            ? data['title' + key.substring(8)]
+            : data.hasOwnProperty('title')
+              ? data['title']
+              : '',
           comment: data.hasOwnProperty('comment' + key.substring(8))
-              ? data['comment' + key.substring(8)]
-              : data.hasOwnProperty('comment')
-                  ? data['comment']
-                  : '',
+            ? data['comment' + key.substring(8)]
+            : data.hasOwnProperty('comment')
+              ? data['comment']
+              : '',
         });
       }
     }

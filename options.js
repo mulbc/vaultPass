@@ -80,11 +80,13 @@ async function querySecrets(
     }
   );
   if (!fetchListOfSecretDirs.ok) {
-    const returnText = await fetchListOfSecretDirs.text();
-    notify.error(`Fetching list of secret directories failed: ${returnText}`);
-    throw new Error(
-      `Fetching list of secret directories failed: ${returnText}`
+    const apiResponse = await fetchListOfSecretDirs.json();
+    notify.error(
+      `Fetching secrets directories at "${storePath}" failed. ${apiResponse.errors.join(
+        '. '
+      )}`
     );
+    return;
   }
 
   let activeSecrets = (await browser.storage.sync.get('secrets')).secrets;
@@ -104,6 +106,22 @@ async function logout() {
   document.getElementById('login').style.display = 'block';
   document.getElementById('logout').style.display = 'none';
   document.getElementById('secretList').innerHTML = '';
+
+  const vaultServerAddress = (await browser.storage.sync.get('vaultAddress'))
+    .vaultAddress;
+  const vaultToken = (await browser.storage.local.get('vaultToken')).vaultToken;
+  if (vaultToken) {
+    try {
+      await fetch(`${vaultServerAddress}/v1/auth/token/revoke-self`, {
+        method: 'POST',
+        'X-Vault-Token': vaultToken,
+        'Content-Type': 'application/json',
+      });
+    } catch (err) {
+      notify.clear().error(err.message);
+    }
+  }
+
   notify.clear().success('logged out', { time: 1000, removeOption: false });
   await browser.storage.local.set({ vaultToken: null });
 }
@@ -204,7 +222,7 @@ async function authToVault(
   authMethod,
   storePath
 ) {
-  const loginToVault = await fetch(
+  const apiResponse = await fetch(
     `${vaultServer}/v1/auth/${authMethod}/login/${username}`,
     {
       method: 'POST',
@@ -214,19 +232,34 @@ async function authToVault(
       body: JSON.stringify({ password: password }),
     }
   );
-  if (!loginToVault.ok) {
+  if (!apiResponse.ok) {
     notify.error(`
       There was an error while calling<br>
       ${vaultServer}/v1/auth/${authMethod}/login/${username}<br>
-      Please check if your username, password and mountpoints are correct.
+      Please check if your username, password and authentication method are correct.
     `);
     return;
   }
-  const authinfo = (await loginToVault.json()).auth;
-  const token = authinfo.client_token;
+  const authInfo = (await apiResponse.json()).auth;
+  const token = authInfo.client_token;
   await browser.storage.local.set({ vaultToken: token });
-  await querySecrets(vaultServer, token, authinfo.policies, storePath);
-  // TODO: Use user token to generate app token with 20h validity - then use THAT token
+  await querySecrets(vaultServer, token, authInfo.policies, storePath);
+
+  browser.runtime.sendMessage({
+    type: 'auto_renew_token',
+  });
+
+  // If token expires in less than 24 hour, try to extend it to avoid having to re-logon too often
+  if (authInfo.lease_duration < 86400) {
+    await fetch(`${vaultServer}/v1/auth/token/renew-self`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Vault-Token': token,
+      },
+      body: JSON.stringify({ increment: '24h' }),
+    });
+  }
 }
 
 async function authButtonClick() {
