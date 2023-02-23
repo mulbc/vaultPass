@@ -184,6 +184,9 @@ function addCredentialsToList(credentials, credentialName, list) {
   const titleContent = document.createElement('span');
   titleContent.classList.add('list__item-text-title', 'link');
   titleContent.textContent = credentials.title || credentialName;
+  if (credentials.comment && credentials.comment.length > 0) {
+    titleContent.title = credentials.comment;
+  }
   primaryContent.appendChild(titleContent);
 
   const detailContent = document.createElement('span');
