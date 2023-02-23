@@ -145,8 +145,16 @@ function extractCredentialsSets(data) {
         credentials.push({
           username: data[key],
           password: data['password' + key.substring(8)],
-          title: data.hasOwnProperty('title') ? data['title'] : '',
-          comment: data.hasOwnProperty('comment') ? data['comment'] : '',
+          title: data.hasOwnProperty('title' + key.substring(8))
+              ? data['title' + key.substring(8)]
+              : data.hasOwnProperty('title')
+                  ? data['title']
+                  : '',
+          comment: data.hasOwnProperty('comment' + key.substring(8))
+              ? data['comment' + key.substring(8)]
+              : data.hasOwnProperty('comment')
+                  ? data['comment']
+                  : '',
         });
       }
     }
