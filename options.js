@@ -220,7 +220,7 @@ async function authToVault(
       ${vaultServer}/v1/auth/${authMethod}/login/${username}<br>
       Please check if your username, password and mountpoints are correct.
     `);
-    new Error(`authToVault: ${await loginToVault.text}`);
+    return;
   }
   const authinfo = (await loginToVault.json()).auth;
   const token = authinfo.client_token;
