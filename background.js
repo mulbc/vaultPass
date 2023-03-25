@@ -2,12 +2,14 @@
 /* global chrome */
 
 const idealTokenTTL = '24h';
-
-var tokenRenewalIntervalId;
+const tokenCheckAlarm = 'tokenCheck';
 
 if (!chrome.browserAction) {
   chrome.browserAction = chrome.action;
 }
+
+refreshTokenListener();
+setupIdleListener();
 
 const storage = {
   storageGetterProvider: (storageType) => {
@@ -157,9 +159,9 @@ async function renewToken(force = false) {
         } seconds`
       );
       if (token.data.ttl > 3600) {
-        refreshTokenListener(1800000);
+        refreshTokenListener(1800);
       } else {
-        refreshTokenListener((token.data.ttl / 2) * 1000);
+        refreshTokenListener((token.data.ttl / 2));
       }
 
       if (force || token.data.ttl <= 60) {
@@ -185,14 +187,22 @@ async function renewToken(force = false) {
   }
 }
 
-function refreshTokenListener(interval = 30000) {
-  if (tokenRenewalIntervalId) {
-    clearInterval(tokenRenewalIntervalId);
-  }
+function refreshTokenListener(interval = 45) {
+  chrome.alarms.get(tokenCheckAlarm, function(exists) {
+    if (exists) {
+      chrome.alarms.clear(tokenCheckAlarm);
+    }
+    
+    chrome.alarms.create(tokenCheckAlarm, {
+      delayInMinutes: interval / 60
+    });
+  });
+}
 
-  tokenRenewalIntervalId = setInterval(async () => {
-    await renewToken();
-  }, interval);
+function setupIdleListener() {
+  if (!chrome.idle.onStateChanged.hasListener(newStateHandler)) {
+    chrome.idle.onStateChanged.addListener(newStateHandler);
+  }
 }
 
 async function newStateHandler(newState) {
@@ -206,29 +216,19 @@ async function newStateHandler(newState) {
   }
 }
 
-function setupIdleListener() {
-  if (!chrome.idle.onStateChanged.hasListener(newStateHandler)) {
-    chrome.idle.onStateChanged.addListener(newStateHandler);
+chrome.alarms.onAlarm.addListener(async function (alarm) {
+  if (alarm.name === tokenCheckAlarm) {
+    await renewToken();
   }
-}
+})
 
 chrome.runtime.onMessage.addListener(function (message, sender) {
   if (message.type === 'auto_fill_secrets') {
-    autoFillSecrets(message, sender).catch(console.error);
     setupIdleListener();
+    autoFillSecrets(message, sender).catch(console.error);
   }
 
   if (message.type === 'auto_renew_token') {
     refreshTokenListener();
   }
-});
-
-chrome.runtime.onInstalled.addListener(() => {
-  refreshTokenListener();
-  setupIdleListener();
-});
-
-chrome.runtime.onStartup.addListener(() => {
-  refreshTokenListener();
-  setupIdleListener();
 });

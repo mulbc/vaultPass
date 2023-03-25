@@ -28,6 +28,7 @@
     "storage",
     "clipboardWrite",
     "idle",
+    "alarms",
     "http://*/*",
     "https://*/*"
   ],
