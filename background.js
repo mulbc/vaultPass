@@ -164,7 +164,7 @@ async function renewToken(force = false) {
         refreshTokenListener((token.data.ttl / 2));
       }
 
-      if (force || token.data.ttl <= 60) {
+      if (force || token.data.ttl <= 600) {
         console.log(`${new Date().toLocaleString()} Renewing Token...`);
         const newToken = await vault.post('/auth/token/renew-self', {
           increment: idealTokenTTL,
