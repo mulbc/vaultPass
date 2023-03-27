@@ -3,12 +3,14 @@
 
 const idealTokenTTL = '24h';
 const tokenCheckAlarm = 'tokenCheck';
+const tokenRenewAlarm = 'tokenRenew';
 
 if (!chrome.browserAction) {
   chrome.browserAction = chrome.action;
 }
 
-refreshTokenListener();
+setupTokenAutoRenew(1800);
+refreshTokenTimer();
 setupIdleListener();
 
 const storage = {
@@ -155,13 +157,13 @@ async function renewToken(force = false) {
 
       console.log(
         `${new Date().toLocaleString()} Token will expire in ${
-          token.data.ttl
-        } seconds`
+          token.data.ttl / 60
+        } minutes`
       );
       if (token.data.ttl > 3600) {
-        refreshTokenListener(1800);
+        refreshTokenTimer(1800);
       } else {
-        refreshTokenListener((token.data.ttl / 2));
+        refreshTokenTimer((token.data.ttl / 2));
       }
 
       if (force || token.data.ttl <= 600) {
@@ -171,8 +173,8 @@ async function renewToken(force = false) {
         });
         console.log(
           `${new Date().toLocaleString()} Token renewed. It will expire in ${
-            newToken.auth.lease_duration
-          } seconds`
+            newToken.auth.lease_duration / 60
+          } minutes`
         );
       }
 
@@ -182,19 +184,31 @@ async function renewToken(force = false) {
       await chrome.browserAction.setBadgeBackgroundColor({ color: '#FF0000' });
       await chrome.browserAction.setBadgeText({ text: '!' });
 
-      refreshTokenListener();
+      refreshTokenTimer();
     }
   }
 }
 
-function refreshTokenListener(interval = 45) {
+function setupTokenAutoRenew(interval = 1800) {
+  chrome.alarms.get(tokenRenewAlarm, function(exists) {
+    if (exists) {
+      chrome.alarms.clear(tokenRenewAlarm);
+    }
+
+    chrome.alarms.create(tokenRenewAlarm, {
+      periodInMinutes: interval / 60
+    });
+  });
+}
+
+function refreshTokenTimer(delay = 45) {
   chrome.alarms.get(tokenCheckAlarm, function(exists) {
     if (exists) {
       chrome.alarms.clear(tokenCheckAlarm);
     }
     
     chrome.alarms.create(tokenCheckAlarm, {
-      delayInMinutes: interval / 60
+      delayInMinutes: delay / 60
     });
   });
 }
@@ -220,6 +234,10 @@ chrome.alarms.onAlarm.addListener(async function (alarm) {
   if (alarm.name === tokenCheckAlarm) {
     await renewToken();
   }
+  
+  if (alarm.name === tokenRenewAlarm) {
+    await renewToken(true);
+  }
 })
 
 chrome.runtime.onMessage.addListener(function (message, sender) {
@@ -229,6 +247,7 @@ chrome.runtime.onMessage.addListener(function (message, sender) {
   }
 
   if (message.type === 'auto_renew_token') {
-    refreshTokenListener();
+    refreshTokenTimer();
   }
 });
+
