@@ -10,7 +10,11 @@ browser.runtime.onMessage.addListener((request) => {
       handleCopyToClipboard(request);
       break;
     case 'fill_creds':
-      handleFillCredits(request);
+      if (!request.isUserTriggered) {
+        setTimeout(handleFillCredits.bind(null, request), 800);
+      } else {
+        handleFillCredits(request);
+      }
       break;
     case 'fetch_token':
       handleFetchToken();
