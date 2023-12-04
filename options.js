@@ -67,37 +67,13 @@ async function querySecrets(
     });
   }
 
-  const storeComponents = storePathComponents(storePath);
+  const fetchListOfSecretDirs = await vaultApiCall('LIST', 'metadata', '',
+      `Fetching secrets directories at "${storePath}" failed`);
 
-  const fetchListOfSecretDirs = await fetch(
-    `${vaultServerAddress}/v1/${storeComponents.root}/metadata/${storeComponents.subPath}`,
-    {
-      method: 'LIST',
-      headers: {
-        'X-Vault-Token': vaultToken,
-        'Content-Type': 'application/json',
-      },
-    }
-  );
-  if (!fetchListOfSecretDirs.ok) {
-    const apiResponse = await fetchListOfSecretDirs.json();
-    notify.error(
-      `Fetching secrets directories at "${storePath}" failed. ${apiResponse.errors.join(
-        '. '
-      )}`
-    );
-    return;
-  }
-
-  let activeSecrets = (await browser.storage.sync.get('secrets')).secrets;
-  if (!activeSecrets) {
-    activeSecrets = [];
-  }
+  let activeSecrets = (await browser.storage.sync.get('secrets')).secrets || [];
 
   const availableSecrets = (await fetchListOfSecretDirs.json()).data.keys;
-  activeSecrets = activeSecrets.filter(
-    (x) => availableSecrets.indexOf(x) !== -1
-  );
+  activeSecrets = activeSecrets.filter((x) => availableSecrets.indexOf(x) !== -1);
   await browser.storage.sync.set({ secrets: activeSecrets });
   await displaySecrets(availableSecrets, activeSecrets);
 }
@@ -164,32 +140,14 @@ async function displaySecrets(secrets, activeSecrets) {
 }
 
 async function secretChanged({ checkbox, item }) {
-  let activeSecrets = (await browser.storage.sync.get('secrets')).secrets;
-  if (!activeSecrets) {
-    activeSecrets = [];
-  }
+  let activeSecrets = (await browser.storage.sync.get('secrets')).secrets || [];
 
   if (checkbox.checked) {
-    const vaultServerAddress = (await browser.storage.sync.get('vaultAddress'))
-      .vaultAddress;
-    const vaultToken = (await browser.storage.local.get('vaultToken'))
-      .vaultToken;
+    const vaultToken = (await browser.storage.local.get('vaultToken')).vaultToken;
     if (!vaultToken) {
       throw new Error('secretChanged: Vault Token is empty after login');
     }
-
-    const storePath = (await browser.storage.sync.get('storePath')).storePath;
-    const storeComponents = storePathComponents(storePath);
-    const fetchListOfSecretsForDir = await fetch(
-      `${vaultServerAddress}/v1/${storeComponents.root}/metadata/${storeComponents.subPath}/${checkbox.name}`,
-      {
-        method: 'LIST',
-        headers: {
-          'X-Vault-Token': vaultToken,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+    const fetchListOfSecretsForDir = await vaultApiCall('LIST', 'metadata', checkbox.name);
     if (!fetchListOfSecretsForDir.ok) {
       checkbox.checked = false;
       checkbox.disabled = true;
