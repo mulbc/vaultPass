@@ -1,0 +1,75 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Vault for Chrome: Add secret</title>
+    <script
+      type="application/javascript"
+      src="browser-polyfill.min.js"
+    ></script>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <header class="header">
+      <div class="header__container">
+        <h1 class="h1 title">VaultPass</h1>
+        <nav role="navigation" class="menu" aria-label="Main Menu">
+          <ul class="menu__links">
+            <li>
+              <a href="/popup.html" class="link link--alt">
+                Keys
+              </a>
+            </li>
+            <li>
+              <a href="/add.html" class="link link--alt link--current" aria-current="page">
+                Add
+              </a>
+            </li>
+            <li>
+              <a href="/options.html" class="link link--alt">
+                Options
+              </a >
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <main class="main">
+      <div role="alert" id="notify" aria-live="assertive"></div>
+      <div id="add">
+        <label for="vault-search">Add secret:</label>
+        <label class="label">
+          Directory:
+          <input type="text" class="input" list="dirsList" id="dirBox" />
+          <datalist id="dirsList"></datalist>
+        </label>
+        <label class="label">
+          Pattern matching url:
+          <input type="text" class="input" name="url" id="urlBox" />
+        </label>
+        <label class="label">
+          Username:
+          <input type="text" class="input" name="login" id="loginBox" />
+        </label>
+        <label class="label">
+          Password:
+          <input type="password" class="input" name="pass" id="passBox" />
+        </label>
+        <input type="submit" class="button" id="showPasswordButton" value="Show Password" />
+        <input
+            type="submit"
+            class="button button--primary"
+            value="Add login to vault"
+            id="addButton"
+            />
+      </div>
+    </main>
+
+    <script src="Notify.js"></script>
+    <script src="common.js"></script>
+    <script src="add.js"></script>
+  </body>
+</html>
