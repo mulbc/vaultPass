@@ -30,7 +30,6 @@ async function mainLoaded() {
         return;
     }
 
-    let first = 1;
     let secretList = (await browser.storage.sync.get('secrets')).secrets || [];
     if (secretList) {
         try {
@@ -47,19 +46,15 @@ async function mainLoaded() {
     }
 }
 
-async function populateDirectorySelection(vaultServerAddress, vaultToken,
-    policies, storePath) {
-    const fetchListOfSecretDirs =
-        await vaultApiCall('LIST', 'metadata', '', 'Fetching secrets directories');
+/**
+ * populate the choose list of secrets directories when adding
+ */
+async function populateDirectorySelection(vaultServerAddress, vaultToken, policies, storePath) {
+    const fetchListOfSecretDirs = await vaultApiCall('LIST', 'metadata', '', 'Fetching secrets directories');
 
-    let activeSecrets = (await browser.storage.sync.get('secrets')).secrets;
-    if (!activeSecrets) {
-        activeSecrets = [];
-    }
-
+    let activeSecrets = (await browser.storage.sync.get('secrets')).secrets || [];
     const availableSecrets = (await fetchListOfSecretDirs.json()).data.keys;
-    activeSecrets =
-        activeSecrets.filter((x) => availableSecrets.indexOf(x) !== -1);
+    activeSecrets = activeSecrets.filter((x) => availableSecrets.indexOf(x) !== -1);
 
     const dirsList = document.getElementById('dirsList');
     var first = 1;
