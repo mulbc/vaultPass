@@ -1,4 +1,4 @@
-# Example access policies using Vault KV version 1
+# Example access policies using Vault KV version 2
 
 The second version of the Vault KV store separates policies into data and metadata access.
 Therefore the policies look a little bit different
