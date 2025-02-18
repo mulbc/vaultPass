@@ -301,19 +301,22 @@ async function authButtonClick() {
 }
 
 async function tokenGrabberClick() {
-  const tabs = await browser.tabs.query({ active: true, currentWindow: true });
   const storePath = document.getElementById('storeBox');
   if (storePath.value.length > 0 && storePath.value[0] === '/') {
     storePath.value = storePath.value.substring(1);
   }
   await browser.storage.sync.set({ storePath: storePath.value });
-  for (let tabIndex = 0; tabIndex < tabs.length; tabIndex++) {
-    const tab = tabs[tabIndex];
-    if (tab.url) {
-      browser.tabs.sendMessage(tab.id, {
-        message: 'fetch_token',
-      });
-      break;
+  const vaultServer = document.getElementById('serverBox');
+  const [currentTab] = await browser.tabs.query({ active: true, currentWindow: true });
+
+  try {
+    await browser.tabs.sendMessage(currentTab.id, { message: 'fetch_token' });
+  } catch (err) {
+    if (!currentTab || !currentTab.url || !currentTab.url.startsWith(vaultServer.value)) {
+      notify.clear().error(`Please navigate to ${vaultServer.value} before grabbing the token.`);
+      return;
+    } else {
+      notify.clear().error(err.message);
     }
   }
 }
