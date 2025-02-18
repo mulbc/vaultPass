@@ -301,7 +301,11 @@ async function authButtonClick() {
 }
 
 async function tokenGrabberClick() {
-  const tabs = await browser.tabs.query({ active: true, currentWindow: true });
+  const storePath = document.getElementById('storeBox');
+  if (storePath.value.length > 0 && storePath.value[0] === '/') {
+    storePath.value = storePath.value.substring(1);
+  }
+  await browser.storage.sync.set({ storePath: storePath.value });
   const vaultServer = document.getElementById('serverBox');
   const [currentTab] = await browser.tabs.query({ active: true, currentWindow: true });
 
