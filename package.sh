@@ -21,7 +21,7 @@ browser=$(which "$(xdg-settings get default-web-browser | sed 's/.desktop//')")
 cwd=$(pwd -P)
 (cd "$dir" && zip -qr -9 -X "$cwd/$zip" .)
 
-$browser --pack-extension="$(realpath /"$dir/")" --pack-extension-key="$key"
+$browser --pack-extension="$(realpath $dir)" --pack-extension-key="$key"
 
 # # signature
 # openssl sha1 -sha1 -binary -sign "$key" <"$zip" >"$sig"
