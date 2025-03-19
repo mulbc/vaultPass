@@ -6,7 +6,7 @@ const notify = new Notify(document.querySelector('#notify'));
 const resultList = document.getElementById('resultList');
 const searchInput = document.getElementById('vault-search');
 var currentUrl, currentTabId;
-var vaultServerAddress, vaultToken, storePath, secretList;
+var vaultServerAddress, vaultToken;
 
 async function mainLoaded() {
   const tabs = await browser.tabs.query({ active: true, currentWindow: true });
@@ -32,15 +32,8 @@ async function mainLoaded() {
     );
   }
 
-  vaultServerAddress = (await browser.storage.sync.get('vaultAddress'))
-    .vaultAddress;
+  vaultServerAddress = (await browser.storage.sync.get('vaultAddress')).vaultAddress;
 
-  storePath = (await browser.storage.sync.get('storePath')).storePath;
-
-  secretList = (await browser.storage.sync.get('secrets')).secrets;
-  if (!secretList) {
-    secretList = [];
-  }
   await querySecrets(currentUrl, searchInput.value.length !== 0);
 }
 
@@ -53,51 +46,18 @@ async function querySecrets(searchString, manualSearch) {
   const promises = [];
   notify.clear();
 
-  const storeComponents = storePathComponents(storePath);
   let matches = 0;
 
+  let secretList = (await browser.storage.sync.get('secrets')).secrets || [];
   for (const secret of secretList) {
-    promises.push(
-      (async function () {
-        const secretsInPath = await fetch(
-          `${vaultServerAddress}/v1/${storeComponents.root}/metadata/${storeComponents.subPath}/${secret}`,
-          {
-            method: 'LIST',
-            headers: {
-              'X-Vault-Token': vaultToken,
-              'Content-Type': 'application/json',
-            },
-          }
-        );
-        if (!secretsInPath.ok) {
-          if (secretsInPath.status !== 404) {
-            notify.error(`Unable to read ${secret}... Try re-login`, {
-              removeOption: true,
-            });
-          }
-          return;
-        }
-        for (const element of (await secretsInPath.json()).data.keys) {
-          const pattern = new RegExp(element);
-          const patternMatches =
-            pattern.test(searchString) || element.includes(searchString);
-          if (patternMatches) {
-            const urlPath = `${vaultServerAddress}/v1/${storeComponents.root}/data/${storeComponents.subPath}/${secret}${element}`;
-            const credentials = await getCredentials(urlPath);
-            const credentialsSets = extractCredentialsSets(
-              credentials.data.data
-            );
-
-            for (const item of credentialsSets) {
-              addCredentialsToList(item, element, resultList);
-
-              matches++;
-            }
-
-            notify.clear();
+    promises.push(querySecretsCallback(searchString, secret,
+        function(element, credentialsSets) {
+          for (const item of credentialsSets) {
+            addCredentialsToList(item, element, resultList);
+            matches++;
           }
         }
-      })()
+      )
     );
   }
 
@@ -134,35 +94,6 @@ const searchHandler = function (e) {
 };
 
 searchInput.addEventListener('keyup', searchHandler);
-
-function extractCredentialsSets(data) {
-  const keys = Object.keys(data);
-  const credentials = [];
-
-  for (const key of keys) {
-    if (key.startsWith('username')) {
-      const passwordField = 'password' + key.substring(8);
-      if (data[passwordField]) {
-        credentials.push({
-          username: data[key],
-          password: data['password' + key.substring(8)],
-          title: data.hasOwnProperty('title' + key.substring(8))
-            ? data['title' + key.substring(8)]
-            : data.hasOwnProperty('title')
-              ? data['title']
-              : '',
-          comment: data.hasOwnProperty('comment' + key.substring(8))
-            ? data['comment' + key.substring(8)]
-            : data.hasOwnProperty('comment')
-              ? data['comment']
-              : '',
-        });
-      }
-    }
-  }
-
-  return credentials;
-}
 
 function addCredentialsToList(credentials, credentialName, list) {
   const item = document.createElement('li');
@@ -226,20 +157,6 @@ function addCredentialsToList(credentials, credentialName, list) {
   actions.appendChild(copyPasswordButton);
 
   list.appendChild(item);
-}
-
-async function getCredentials(urlPath) {
-  const vaultToken = (await browser.storage.local.get('vaultToken')).vaultToken;
-  const result = await fetch(urlPath, {
-    headers: {
-      'X-Vault-Token': vaultToken,
-      'Content-Type': 'application/json',
-    },
-  });
-  if (!result.ok) {
-    throw new Error(`getCredentials: ${await result.text}`);
-  }
-  return await result.json();
 }
 
 async function fillCredentialsInBrowser(username, password) {
