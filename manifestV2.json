@@ -36,5 +36,8 @@
     "gecko": {
       "id": "addon@blum.coffee"
     }
-  }
+  },
+  "web_accessible_resources": [
+    "chooseMatch.html"
+  ]
 }

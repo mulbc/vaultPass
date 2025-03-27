@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 /* global browser */
+/* global chrome */
 // We can only access the TABs DOM with this script.
 // It will get the credentials via message passing from the popup
 // It is also responsible to copy strings to the clipboard
@@ -192,3 +193,54 @@ function fillForm() {
 }
 
 fillForm();
+
+async function showMatchesPopupIframe(matches) {
+  let iframe = document.getElementById('multiple-matches-popup');
+  if (!iframe) {
+    iframe = document.createElement('iframe');
+    iframe.id = 'multiple-matches-popup';
+
+    iframe.src = chrome.runtime.getURL('chooseMatch.html');
+
+    iframe.style.position = 'fixed';
+    iframe.style.top = '20px';
+    iframe.style.right = '20px';
+    iframe.style.width = '400px';
+    iframe.style.height = 'auto';
+    iframe.style.zIndex = '999999';
+    iframe.style.background = '#fff';
+    iframe.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
+    iframe.style.borderRadius = '4px';
+    iframe.style.border = 'none';
+
+    document.body.appendChild(iframe);
+  }
+
+  iframe.addEventListener('load', () => {
+    iframe.contentWindow.postMessage({ type: 'popup_matches', matches: matches }, '*');
+  });
+}
+
+window.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'close_popup') {
+    const iframe = document.getElementById('multiple-matches-popup');
+    if (iframe) {
+      iframe.remove();
+    }
+  }
+});
+
+chrome.runtime.onMessage.addListener((request) => {
+  if (request.type === 'show_matches_popup_iframe') {
+    showMatchesPopupIframe(request.matches);
+  }
+});
+
+window.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'iframe_resize') {
+    const iframe = document.getElementById('multiple-matches-popup');
+    if (iframe) {
+      iframe.style.height = event.data.height + 'px';
+    }
+  }
+});
