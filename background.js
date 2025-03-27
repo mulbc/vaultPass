@@ -117,6 +117,8 @@ async function autoFillSecrets(message, sender) {
 
   let loginCount = 0;
 
+  const matches = [];
+
   for (const secret of secretList) {
     const secretKeys = await vault.list(
       `/${storeComponents.root}/metadata/${storeComponents.subPath}/${secret}`
@@ -124,16 +126,19 @@ async function autoFillSecrets(message, sender) {
     for (const key of secretKeys.data.keys) {
       const pattern = new RegExp(key);
       const patternMatches = pattern.test(hostname);
-      // If the key is an exact match to the current hostname --> autofill
+
+      // Add entries to array if the hostname is a match
       if (hostname === clearHostname(key)) {
         const credentials = await vault.get(
           `/${storeComponents.root}/data/${storeComponents.subPath}/${secret}${key}`
         );
 
-        chrome.tabs.sendMessage(sender.tab.id, {
-          message: 'fill_creds',
+        matches.push({
+          organization: secret,
+          secret: key,
           username: credentials.data.data.username,
           password: credentials.data.data.password,
+          comment: credentials.data.data.comment,
         });
       }
       if (patternMatches) {
@@ -144,6 +149,25 @@ async function autoFillSecrets(message, sender) {
   if (loginCount > 0) {
     chrome.browserAction.setBadgeText({ text: '*', tabId: sender.tab.id });
   }
+
+  // If there is only one match, fill the credentials, otherwise prompt the user
+  if (matches.length === 1) {
+    const m = matches[0];
+    chrome.tabs.sendMessage(sender.tab.id, {
+      message: 'fill_creds',
+      username: m.username,
+      password: m.password,
+    });
+  } else if (matches.length > 1) {
+    promptUserForChoice(matches, sender.tab.id);
+  }
+}
+
+function promptUserForChoice(matches, tabId) {
+  chrome.tabs.sendMessage(tabId, {
+    type: 'show_matches_popup_iframe',
+    matches: matches
+  });
 }
 
 async function renewToken(force = false) {
@@ -238,7 +262,7 @@ chrome.alarms.onAlarm.addListener(async function (alarm) {
   if (alarm.name === tokenRenewAlarm) {
     await renewToken(true);
   }
-})
+});
 
 chrome.runtime.onMessage.addListener(function (message, sender) {
   if (message.type === 'auto_fill_secrets') {
@@ -251,3 +275,13 @@ chrome.runtime.onMessage.addListener(function (message, sender) {
   }
 });
 
+// Listener to catch the fill_creds message and then forward it to the active tab
+chrome.runtime.onMessage.addListener((request) => {
+  if (request.message === 'fill_creds') {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs.length) {
+        chrome.tabs.sendMessage(tabs[0].id, request);
+      }
+    });
+  }
+});

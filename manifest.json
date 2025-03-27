@@ -24,5 +24,9 @@
   "background": {
     "service_worker": "background.js"
   },
-  "permissions": ["activeTab", "storage", "clipboardWrite", "idle", "alarms"]
+  "permissions": ["activeTab", "storage", "clipboardWrite", "idle", "alarms"],
+  "web_accessible_resources": [{
+    "resources": ["chooseMatch.html"],
+    "matches": ["<all_urls>"]
+  }]
 }
