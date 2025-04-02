@@ -166,7 +166,7 @@ async function autoFillSecrets(message, sender) {
 function promptUserForChoice(matches, tabId) {
   chrome.tabs.sendMessage(tabId, {
     type: 'show_matches_popup_iframe',
-    matches: matches
+    matches: matches,
   });
 }
 
@@ -187,7 +187,7 @@ async function renewToken(force = false) {
       if (token.data.ttl > 3600) {
         refreshTokenTimer(1800);
       } else {
-        refreshTokenTimer((token.data.ttl / 2));
+        refreshTokenTimer(token.data.ttl / 2);
       }
 
       if (force || token.data.ttl <= 600) {
@@ -214,25 +214,25 @@ async function renewToken(force = false) {
 }
 
 function setupTokenAutoRenew(interval = 1800) {
-  chrome.alarms.get(tokenRenewAlarm, function(exists) {
+  chrome.alarms.get(tokenRenewAlarm, function (exists) {
     if (exists) {
       chrome.alarms.clear(tokenRenewAlarm);
     }
 
     chrome.alarms.create(tokenRenewAlarm, {
-      periodInMinutes: interval / 60
+      periodInMinutes: interval / 60,
     });
   });
 }
 
 function refreshTokenTimer(delay = 45) {
-  chrome.alarms.get(tokenCheckAlarm, function(exists) {
+  chrome.alarms.get(tokenCheckAlarm, function (exists) {
     if (exists) {
       chrome.alarms.clear(tokenCheckAlarm);
     }
-    
+
     chrome.alarms.create(tokenCheckAlarm, {
-      delayInMinutes: delay / 60
+      delayInMinutes: delay / 60,
     });
   });
 }
@@ -258,7 +258,7 @@ chrome.alarms.onAlarm.addListener(async function (alarm) {
   if (alarm.name === tokenCheckAlarm) {
     await renewToken();
   }
-  
+
   if (alarm.name === tokenRenewAlarm) {
     await renewToken(true);
   }

@@ -217,7 +217,10 @@ async function showMatchesPopupIframe(matches) {
   }
 
   iframe.addEventListener('load', () => {
-    iframe.contentWindow.postMessage({ type: 'popup_matches', matches: matches }, '*');
+    iframe.contentWindow.postMessage(
+      { type: 'popup_matches', matches: matches },
+      '*'
+    );
   });
 }
 

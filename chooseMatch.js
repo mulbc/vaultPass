@@ -22,12 +22,12 @@ document.addEventListener('DOMContentLoaded', () => {
 function populateMatches(matches) {
   const matchesListEl = document.getElementById('matchesList');
   if (!matchesListEl) {
-    console.error('Element with ID \'matchesList\' not found.');
+    console.error("Element with ID 'matchesList' not found.");
     return;
   }
   matchesListEl.innerHTML = '';
 
-  matches.forEach(match => {
+  matches.forEach((match) => {
     const li = document.createElement('li');
     li.classList.add('list__item', 'list__item--three-line');
 
@@ -46,7 +46,7 @@ function populateMatches(matches) {
         message: 'fill_creds',
         username: match.username,
         password: match.password,
-        isUserTriggered: true
+        isUserTriggered: true,
       });
       if (window.parent !== window) {
         window.parent.postMessage({ type: 'close_popup' }, '*');
