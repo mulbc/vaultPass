@@ -7,7 +7,7 @@ async function mainLoaded() {
   const vaultServer = document.getElementById('serverBox');
   const login = document.getElementById('loginBox');
   const auth = document.getElementById('authMount');
-  const store = document.getElementById('storeBox');
+  const storePathsContainer = document.getElementById('storePathsContainer');
 
   // put listener on login button
   document
@@ -36,26 +36,44 @@ async function mainLoaded() {
     auth.value = authMethod;
     auth.parentNode.classList.add('is-dirty');
   }
-  const storePath = (await browser.storage.sync.get('storePath')).storePath;
-  if (storePath) {
-    store.value = storePath;
-    store.parentNode.classList.add('is-dirty');
+
+  const storePaths = (await browser.storage.sync.get('storePaths')).storePaths;
+
+  storePathsContainer.innerHTML = ''; // clear container
+  if (storePaths && storePaths.length > 0) {
+    storePaths.forEach((path) => {
+      addStorePathRow(path);
+      storePathsContainer.parentNode.classList.add('is-dirty');
+    });
+  } else {
+    // Default value if nothing is saved
+    addStorePathRow('secret/VaultPass');
   }
+
+  await browser.storage.sync.set({ storePaths: storePaths });
+
   const vaultToken = (await browser.storage.local.get('vaultToken')).vaultToken;
   if (vaultToken) {
     try {
-      await querySecrets(vaultServerAddress, vaultToken, null, storePath);
+      await querySecrets(vaultServerAddress, vaultToken, null, storePaths);
     } catch (err) {
       notify.clear().error(err.message);
     }
   }
 }
 
+document
+  .getElementById('addStorePathButton')
+  .addEventListener('click', function (event) {
+    event.preventDefault();
+    addStorePathRow('');
+  });
+
 async function querySecrets(
   vaultServerAddress,
   vaultToken,
   policies,
-  storePath
+  storePaths
 ) {
   // Hide login prompt if we already have a Token
   document.getElementById('login').style.display = 'none';
@@ -67,42 +85,55 @@ async function querySecrets(
     });
   }
 
-  const storeComponents = storePathComponents(storePath);
+  // Creating a mapping to make sure we know which secrets belong to which store path
+  let allSecretsMapping = [];
 
-  const fetchListOfSecretDirs = await fetch(
-    `${vaultServerAddress}/v1/${storeComponents.root}/metadata/${storeComponents.subPath}`,
-    {
+  // For each KV store path, list the secrets push a mapping object to allSecretsMapping
+  for (const storePath of storePaths) {
+    const storeComponents = storePathComponents(storePath);
+    const url = `${vaultServerAddress}/v1/${storeComponents.root}/metadata/${storeComponents.subPath}`;
+    const response = await fetch(url, {
       method: 'LIST',
       headers: {
         'X-Vault-Token': vaultToken,
         'Content-Type': 'application/json',
       },
+    });
+    if (!response.ok) {
+      const apiResponse = await response.json();
+      notify.error(
+        `Fetching secrets directories at "${storePath}" failed. ${apiResponse.errors.join('. ')}`
+      );
+      continue;
     }
-  );
-  if (!fetchListOfSecretDirs.ok) {
-    const apiResponse = await fetchListOfSecretDirs.json();
-    notify.error(
-      `Fetching secrets directories at "${storePath}" failed. ${apiResponse.errors.join(
-        '. '
-      )}`
-    );
-    return;
+    const keys = (await response.json()).data.keys;
+    keys.forEach((key) => {
+      allSecretsMapping.push({ name: key, storePath: storePath });
+    });
   }
 
-  let activeSecrets = (await browser.storage.sync.get('secrets')).secrets;
-  if (!activeSecrets) {
-    activeSecrets = [];
-  }
+  // Creating a "combined" key for each mapping (storePath + '##' + name)
+  // and use it to filter out duplicates, in case there are any.
+  const seen = {};
+  allSecretsMapping = allSecretsMapping.filter((mapping) => {
+    const combined = getCombinedKey(mapping);
+    if (seen[combined]) return false;
+    seen[combined] = true;
+    return true;
+  });
 
-  const availableSecrets = (await fetchListOfSecretDirs.json()).data.keys;
-  activeSecrets = activeSecrets.filter(
-    (x) => availableSecrets.indexOf(x) !== -1
-  );
+  let activeSecrets = (await browser.storage.sync.get('secrets')).secrets || [];
+  const validKeys = new Set(allSecretsMapping.map(getCombinedKey));
+  activeSecrets = activeSecrets.filter(k => validKeys.has(k));
+
   await browser.storage.sync.set({ secrets: activeSecrets });
-  await displaySecrets(availableSecrets, activeSecrets);
+  await displaySecrets(allSecretsMapping, activeSecrets);
 }
 
 async function logout() {
+  // reset the UI
+  document.getElementById('secretList').innerHTML = '';
+
   document.getElementById('login').style.display = 'block';
   document.getElementById('logout').style.display = 'none';
   document.getElementById('secretList').innerHTML = '';
@@ -126,11 +157,11 @@ async function logout() {
   await browser.storage.local.set({ vaultToken: null });
 }
 
-async function displaySecrets(secrets, activeSecrets) {
+async function displaySecrets(secretsMapping, activeSecrets) {
   const list = document.getElementById('secretList');
+  list.innerHTML = '';
 
-  for (const secret of secrets) {
-    // Create the list item:
+  for (const mapping of secretsMapping) {
     const item = document.createElement('li');
     item.classList.add('list__item');
 
@@ -141,7 +172,7 @@ async function displaySecrets(secrets, activeSecrets) {
     const primaryContent = document.createElement('span');
     primaryContent.classList.add('list__item-text-title');
     label.appendChild(primaryContent);
-    primaryContent.innerText = secret;
+    primaryContent.innerText = `${mapping.name} (${mapping.storePath})`;
 
     const secondaryContent = document.createElement('span');
     secondaryContent.classList.add('list__item-text-body');
@@ -151,23 +182,26 @@ async function displaySecrets(secrets, activeSecrets) {
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
     checkbox.value = 1;
-    checkbox.name = secret;
-    checkbox.checked = activeSecrets.indexOf(secret) > -1;
+
+    const combinedKey = getCombinedKey(mapping);
+    checkbox.name = combinedKey;
+    checkbox.checked = activeSecrets.indexOf(combinedKey) > -1;
     checkbox.addEventListener('change', (event) =>
-      secretChanged({ event, checkbox, item })
+      secretChanged({ event, checkbox, item, secretMapping: mapping })
     );
     secondaryContent.appendChild(checkbox);
 
-    // Add it to the list:
     list.appendChild(item);
   }
 }
 
-async function secretChanged({ checkbox, item }) {
+async function secretChanged({ checkbox, item, secretMapping }) {
   let activeSecrets = (await browser.storage.sync.get('secrets')).secrets;
   if (!activeSecrets) {
     activeSecrets = [];
   }
+
+  const combinedKey = getCombinedKey(secretMapping);
 
   if (checkbox.checked) {
     const vaultServerAddress = (await browser.storage.sync.get('vaultAddress'))
@@ -178,10 +212,9 @@ async function secretChanged({ checkbox, item }) {
       throw new Error('secretChanged: Vault Token is empty after login');
     }
 
-    const storePath = (await browser.storage.sync.get('storePath')).storePath;
-    const storeComponents = storePathComponents(storePath);
+    const storeComponents = storePathComponents(secretMapping.storePath);
     const fetchListOfSecretsForDir = await fetch(
-      `${vaultServerAddress}/v1/${storeComponents.root}/metadata/${storeComponents.subPath}/${checkbox.name}`,
+      `${vaultServerAddress}/v1/${storeComponents.root}/metadata/${storeComponents.subPath}/${secretMapping.name}`,
       {
         method: 'LIST',
         headers: {
@@ -195,23 +228,17 @@ async function secretChanged({ checkbox, item }) {
       checkbox.disabled = true;
       item.classList.add('disabled');
       throw new Error(
-        `ERROR accessing this field: ${await fetchListOfSecretsForDir.text()}`
+        `ERROR accessing this field: ${await fetchListOfSecretsForDir.text()}".`
       );
     }
-    if (activeSecrets.indexOf(checkbox.name) < 0) {
-      activeSecrets.push(checkbox.name);
+    if (activeSecrets.indexOf(combinedKey) < 0) {
+      activeSecrets.push(combinedKey);
     }
-    await browser.storage.sync.set({ secrets: activeSecrets });
   } else {
-    for (
-      let index = activeSecrets.indexOf(checkbox.name);
-      index > -1;
-      index = activeSecrets.indexOf(checkbox.name)
-    ) {
-      activeSecrets.splice(index, 1);
-    }
-    await browser.storage.sync.set({ secrets: activeSecrets });
+    activeSecrets = activeSecrets.filter((key) => key !== combinedKey);
   }
+
+  await browser.storage.sync.set({ secrets: activeSecrets });
 }
 
 // invoked after user clicks "login to vault" button, if all fields filled in, and URL passed regexp check.
@@ -220,7 +247,7 @@ async function authToVault(
   username,
   password,
   authMethod,
-  storePath
+  storePaths
 ) {
   const apiResponse = await fetch(
     `${vaultServer}/v1/auth/${authMethod}/login/${username}`,
@@ -243,7 +270,7 @@ async function authToVault(
   const authInfo = (await apiResponse.json()).auth;
   const token = authInfo.client_token;
   await browser.storage.local.set({ vaultToken: token });
-  await querySecrets(vaultServer, token, authInfo.policies, storePath);
+  await querySecrets(vaultServer, token, authInfo.policies, storePaths);
 
   browser.runtime.sendMessage({
     type: 'auto_renew_token',
@@ -268,29 +295,31 @@ async function authButtonClick() {
   const login = document.getElementById('loginBox');
   const authMount = document.getElementById('authMount');
   const pass = document.getElementById('passBox');
-  const storePath = document.getElementById('storeBox');
+
+  const storePathsContainer = document.getElementById('storePathsContainer');
+  const storePathInputs =
+    storePathsContainer.querySelectorAll('input.store-path');
+
+  const storePaths = collectStorePaths();
+
   // verify input not empty. TODO: verify correct URL format.
   if (
     vaultServer.value.length > 0 &&
     login.value.length > 0 &&
     pass.value.length > 0
   ) {
-    if (storePath.value.length > 0 && storePath.value[0] === '/') {
-      storePath.value = storePath.value.substring(1);
-    }
-
     // if input fields are not empty, attempt authorization to specified vault server URL.
     await browser.storage.sync.set({ vaultAddress: vaultServer.value });
     await browser.storage.sync.set({ username: login.value });
     await browser.storage.sync.set({ authMethod: authMount.value });
-    await browser.storage.sync.set({ storePath: storePath.value });
+    await browser.storage.sync.set({ storePaths: storePaths });
     try {
       await authToVault(
         vaultServer.value,
         login.value,
         pass.value,
         authMount.value,
-        storePath.value
+        storePaths
       );
     } catch (err) {
       notify.clear().error(err.message);
@@ -301,19 +330,28 @@ async function authButtonClick() {
 }
 
 async function tokenGrabberClick() {
-  const storePath = document.getElementById('storeBox');
-  if (storePath.value.length > 0 && storePath.value[0] === '/') {
-    storePath.value = storePath.value.substring(1);
-  }
-  await browser.storage.sync.set({ storePath: storePath.value });
+  const storePaths = collectStorePaths();
+  await browser.storage.sync.set({ storePaths: storePaths });
+
   const vaultServer = document.getElementById('serverBox');
-  const [currentTab] = await browser.tabs.query({ active: true, currentWindow: true });
+  const [currentTab] = await browser.tabs.query({
+    active: true,
+    currentWindow: true,
+  });
 
   try {
     await browser.tabs.sendMessage(currentTab.id, { message: 'fetch_token' });
   } catch (err) {
-    if (!currentTab || !currentTab.url || !currentTab.url.startsWith(vaultServer.value)) {
-      notify.clear().error(`Please navigate to ${vaultServer.value} before grabbing the token.`);
+    if (
+      !currentTab ||
+      !currentTab.url ||
+      !currentTab.url.startsWith(vaultServer.value)
+    ) {
+      notify
+        .clear()
+        .error(
+          `Please navigate to ${vaultServer.value} before grabbing the token.`
+        );
       return;
     } else {
       notify.clear().error(err.message);
@@ -328,12 +366,13 @@ browser.runtime.onMessage.addListener(async function (message) {
     case 'fetch_token': {
       await browser.storage.local.set({ vaultToken: message.token });
       await browser.storage.sync.set({ vaultAddress: message.address });
-      const storePath = (await browser.storage.sync.get('storePath')).storePath;
+      const storePaths = (await browser.storage.sync.get('storePaths'))
+        .storePaths;
       await querySecrets(
         message.address,
         message.token,
         message.policies,
-        storePath
+        storePaths
       );
       break;
     }
@@ -344,3 +383,58 @@ browser.runtime.onMessage.addListener(async function (message) {
       break;
   }
 });
+
+function getCombinedKey(mapping) {
+  return mapping.storePath + '##' + mapping.name;
+}
+
+function addStorePathRow(pathValue = '') {
+  const kvItem = document.createElement('div');
+  kvItem.className = 'kv-item';
+
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'input store-path kv-path';
+  input.placeholder = 'Path to the KV store within Vault';
+  input.value = pathValue;
+
+  const removeButton = document.createElement('button');
+  removeButton.type = 'button';
+  removeButton.className = 'kv-remove';
+  removeButton.innerText = 'Remove';
+
+  removeButton.addEventListener('click', () => {
+    kvItem.remove();
+    saveStorePaths();
+  });
+
+  kvItem.appendChild(input);
+  kvItem.appendChild(removeButton);
+
+  const container = document.getElementById('storePathsContainer');
+  container.appendChild(kvItem);
+}
+
+function collectStorePaths() {
+  const storePathsContainer = document.getElementById('storePathsContainer');
+  const storePathInputs =
+    storePathsContainer.querySelectorAll('input.store-path');
+
+  const storePaths = [];
+  storePathInputs.forEach((input) => {
+    let path = input.value.trim();
+    if (path.length > 0) {
+      // remove leading slash if present
+      if (path[0] === '/') {
+        path = path.substring(1);
+      }
+      storePaths.push(path);
+    }
+  });
+  return storePaths;
+}
+
+function saveStorePaths() {
+  const storePaths = collectStorePaths();
+  browser.storage.sync.set({ storePaths: storePaths });
+}
