@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Vault for Chrome: Multiple Matches Found</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="style.css" />
+    <script type="application/javascript" src="browser-polyfill.min.js"></script>
+  </head>
+  <body>
+    <header class="header">
+      <div class="header__container">
+        <h1 class="h1 title">VaultPass</h1>
+      </div>
+    </header>
+    <main class="main">
+      <div role="alert" id="notify" aria-live="assertive"></div>
+      <label for="matchesList">Multiple matches were found, please choose:</label>
+      <ul class="list" id="matchesList"></ul>
+      <button class="button" id="closePopupBtn">Close</button>
+    </main>
+    <script src="chooseMatch.js"></script>
+  </body>
+</html>
