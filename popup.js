@@ -53,14 +53,23 @@ async function querySecrets(searchString, manualSearch) {
   const promises = [];
   notify.clear();
 
-  const storeComponents = storePathComponents(storePath);
   let matches = 0;
+  const delimiter = '##';
 
-  for (const secret of secretList) {
+  for (const combined of secretList) {
+    const parts = combined.split(delimiter);
+    if (parts.length !== 2) {
+      console.error('Invalid secret format: ', combined);
+      continue;
+    }
+    const secretStorePath = parts[0];
+    const secretName = parts[1];
+    const storeComponents = storePathComponents(secretStorePath);
+
     promises.push(
       (async function () {
         const secretsInPath = await fetch(
-          `${vaultServerAddress}/v1/${storeComponents.root}/metadata/${storeComponents.subPath}/${secret}`,
+          `${vaultServerAddress}/v1/${storeComponents.root}/metadata/${storeComponents.subPath}/${secretName}`,
           {
             method: 'LIST',
             headers: {
@@ -71,7 +80,7 @@ async function querySecrets(searchString, manualSearch) {
         );
         if (!secretsInPath.ok) {
           if (secretsInPath.status !== 404) {
-            notify.error(`Unable to read ${secret}... Try re-login`, {
+            notify.error(`Unable to read ${secretName}... Try re-login`, {
               removeOption: true,
             });
           }
@@ -82,7 +91,7 @@ async function querySecrets(searchString, manualSearch) {
           const patternMatches =
             pattern.test(searchString) || element.includes(searchString);
           if (patternMatches) {
-            const urlPath = `${vaultServerAddress}/v1/${storeComponents.root}/data/${storeComponents.subPath}/${secret}${element}`;
+            const urlPath = `${vaultServerAddress}/v1/${storeComponents.root}/data/${storeComponents.subPath}/${secretName}/${element}`;
             const credentials = await getCredentials(urlPath);
             const credentialsSets = extractCredentialsSets(
               credentials.data.data
@@ -103,7 +112,6 @@ async function querySecrets(searchString, manualSearch) {
 
   try {
     await Promise.all(promises);
-
     if (matches > 0) {
       browser.browserAction.setBadgeText({
         text: `${matches}`,

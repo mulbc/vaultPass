@@ -105,8 +105,6 @@ async function autoFillSecrets(message, sender) {
   const vaultToken = await storage.local.get('vaultToken');
   const vaultAddress = await storage.sync.get('vaultAddress');
   const secretList = await storage.sync.get('secrets', []);
-  const storePath = await storage.sync.get('storePath');
-  const storeComponents = storePathComponents(storePath);
 
   if (!vaultToken || !vaultAddress) return;
 
@@ -119,10 +117,22 @@ async function autoFillSecrets(message, sender) {
 
   const matches = [];
 
-  for (const secret of secretList) {
+  const delimiter = '##';
+
+  for (const combined of secretList) {
+    const parts = combined.split(delimiter);
+    if (parts.length !== 2) {
+      console.error('Unexpected secret format:', combined);
+      continue;
+    }
+
+    const [secretStorePath, secretName] = parts;
+    const storeComponents = storePathComponents(secretStorePath);
+
     const secretKeys = await vault.list(
-      `/${storeComponents.root}/metadata/${storeComponents.subPath}/${secret}`
+      `/${storeComponents.root}/metadata/${storeComponents.subPath}/${secretName}`
     );
+
     for (const key of secretKeys.data.keys) {
       const pattern = new RegExp(key);
       const patternMatches = pattern.test(hostname);
@@ -130,12 +140,12 @@ async function autoFillSecrets(message, sender) {
       // Add entries to array if the hostname is a match
       if (hostname === clearHostname(key)) {
         const credentials = await vault.get(
-          `/${storeComponents.root}/data/${storeComponents.subPath}/${secret}${key}`
+          `/${storeComponents.root}/data/${storeComponents.subPath}/${secretName}${key}`
         );
 
         matches.push({
-          organization: secret,
-          secret: key,
+          organization: secretStorePath,
+          secret: secretName,
           username: credentials.data.data.username,
           password: credentials.data.data.password,
           comment: credentials.data.data.comment,
@@ -275,13 +285,3 @@ chrome.runtime.onMessage.addListener(function (message, sender) {
   }
 });
 
-// Listener to catch the fill_creds message and then forward it to the active tab
-chrome.runtime.onMessage.addListener((request) => {
-  if (request.message === 'fill_creds') {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (tabs.length) {
-        chrome.tabs.sendMessage(tabs[0].id, request);
-      }
-    });
-  }
-});
