@@ -1,51 +1,37 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Vault for Chrome</title>
-    <meta charset="utf-8" />
-    <script
-      type="application/javascript"
-      src="browser-polyfill.min.js"
-    ></script>
-    <link rel="stylesheet" href="style.css" />
-  </head>
 
-  <body>
-    <header class="header">
-      <div class="header__container">
-        <h1 class="h1 title">VaultPass</h1>
-        <nav role="navigation" class="menu" aria-label="Main Menu">
-          <ul class="menu__links">
-            <li>
-              <a
-                href="/popup.html"
-                class="link link--alt link--current"
-                aria-current="page"
-                >Keys
-              </a>
-            </li>
-            <li><a href="/options.html" class="link link--alt">Options</a></li>
-          </ul>
-        </nav>
-      </div>
-    </header>
+<head>
+  <title>Vault for Chrome</title>
+  <meta charset="utf-8" />
+  <script type="application/javascript" src="browser-polyfill.min.js"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
 
-    <main class="main">
-      <div role="alert" id="notify" aria-live="assertive"></div>
-      <label for="vault-search">Search Secrets:</label>
-      <input
-        type="search"
-        id="vault-search"
-        name="q"
-        aria-label="Search all secrets"
-        size="30"
-      />
+<body>
+  <header class="header">
+    <div class="header__container">
+      <h1 class="h1 title">VaultPass</h1>
+      <nav role="navigation" class="menu" aria-label="Main Menu">
+        <div class="tabs">
+          <a href="/popup.html" class="tab tab--active" aria-current="page" data-page="keys">Keys</a>
+          <a href="/options.html" class="tab" data-page="options">Options</a>
+        </div>
+      </nav>
+    </div>
+  </header>
 
-      <ul class="list" id="resultList"></ul>
-    </main>
+  <main class="main">
+    <div role="alert" id="notify" aria-live="assertive"></div>
+    <label for="vault-search">Search Secrets:</label>
+    <input type="search" id="vault-search" name="q" aria-label="Search all secrets" size="30" />
 
-    <script src="Notify.js"></script>
-    <script src="common.js"></script>
-    <script src="popup.js"></script>
-  </body>
+    <ul class="list" id="resultList"></ul>
+  </main>
+
+  <script src="Notify.js"></script>
+  <script src="common.js"></script>
+  <script src="popup.js"></script>
+</body>
+
 </html>
