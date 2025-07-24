@@ -26,8 +26,12 @@ async function mainLoaded() {
   vaultToken = (await browser.storage.local.get('vaultToken')).vaultToken;
   if (!vaultToken || vaultToken.length === 0) {
     return notify.clear().info(
-      `No Vault-Token information available.<br>
-      Please use the <a href="/options.html" class="link">options page</a> to login.`,
+      `<p class="notify__message">
+        No Vault‑Token information available.
+      </p>
+      <a href="options.html" class="button button--primary notify__cta">
+        Go to Options
+      </a>`,
       { removeOption: false }
     );
   }

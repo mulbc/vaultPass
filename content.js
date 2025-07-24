@@ -235,7 +235,11 @@ window.addEventListener('message', (event) => {
 
 chrome.runtime.onMessage.addListener((request) => {
   if (request.type === 'show_matches_popup_iframe') {
-    showMatchesPopupIframe(request.matches);
+    const hasUsername = !!findUsernameNodeIn(document, true);
+    const hasPassword = !!findPasswordInput();
+    if (hasUsername && hasPassword) {
+      showMatchesPopupIframe(request.matches);
+    }
   }
 });
 

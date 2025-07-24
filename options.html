@@ -1,113 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>Vault for Chrome: Settings</title>
-    <script
-      type="application/javascript"
-      src="browser-polyfill.min.js"
-    ></script>
-    <link rel="stylesheet" href="style.css" />
-  </head>
 
-  <body>
-    <header class="header">
-      <div class="header__container">
-        <h1 class="h1 title">VaultPass</h1>
-        <nav role="navigation" class="menu" aria-label="Main Menu">
-          <ul class="menu__links">
-            <li>
-              <a href="/popup.html" class="link link--alt" aria-current="page"
-                >Keys
-              </a>
-            </li>
-            <li>
-              <a href="/options.html" class="link link--alt link--current"
-                >Options</a
-              >
-            </li>
-          </ul>
-        </nav>
-      </div>
-    </header>
+<head>
+  <meta charset="utf-8" />
+  <title>Vault for Chrome: Settings</title>
+  <script type="application/javascript" src="browser-polyfill.min.js"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
 
-    <main class="main">
-      <div id="notify"></div>
+<body>
+  <header class="header">
+    <div class="header__container">
+      <h1 class="h1 title">VaultPass</h1>
+      <nav role="navigation" class="menu" aria-label="Main Menu">
+        <div class="tabs">
+          <a href="/popup.html" class="tab" data-page="keys">Keys</a>
+          <a href="/options.html" class="tab tab--active" aria-current="page" data-page="options">Options</a>
+        </div>
+      </nav>
+    </div>
+  </header>
 
-      <div id="login">
-        <label class="label">
-          Vault server URL:
-          <input type="text" class="input" name="server" id="serverBox" />
-        </label>
+  <main class="main">
+    <div id="notify"></div>
 
-        <label class="label">
-          Username:
-          <input type="text" class="input" name="login" id="loginBox" />
-        </label>
+    <div id="login">
+      <label class="label">
+        Vault server URL:
+        <input type="text" class="input" name="server" id="serverBox" />
+      </label>
 
-        <label class="label">
-          Password:
-          <input type="password" class="input" name="pass" id="passBox" />
-        </label>
+      <label class="label">
+        Username:
+        <input type="text" class="input" name="login" id="loginBox" />
+      </label>
 
-        <label class="label">
-          Auth Method:
+      <label class="label">
+        Password:
+        <input type="password" class="input" name="pass" id="passBox" />
+      </label>
+
+      <label class="label">
+        KV Stores:
+        <div id="storePathsContainer" class="kv-list">
           <input
             type="text"
-            list="mounts"
-            name="authMount"
-            id="authMount"
-            class="input"
+            class="input store-path"
+            name="storePath"
+            placeholder="Path to the KV store within Vault"
+            value="secret/vaultPass"
           />
-          <datalist id="mounts">
-            <option>ldap</option>
-            <option>userpass</option>
-            <option>radius</option>
-            <option>okta</option>
-          </datalist>
-        </label>
+        </div>
+        <button id="addStorePathButton" class="button button--secondary button--small" type="button">
+          + Add KV Store
+        </button>
+      </label>
 
-        <label class="label">
-          KV Stores:
-          <div id="storePathsContainer" class="kv-list">
-            <input
-              type="text"
-              class="input store-path"
-              name="storePath"
-              placeholder="Path to the KV store within Vault"
-              value="secret/vaultPass"
-            />
-          </div>
-          <button id="addStorePathButton" class="button button--secondary button--small" type="button">
-            + Add KV Store
-          </button>
-        </label>
+      <label class="label">
+        Auth Method:
+        <input type="text" list="mounts" name="authMount" id="authMount" class="input" />
+        <datalist id="mounts">
+          <option>ldap</option>
+          <option>userpass</option>
+          <option>radius</option>
+          <option>okta</option>
+        </datalist>
+      </label>
 
-        <input
-          type="submit"
-          class="button button--primary"
-          value="Login to Vault"
-          id="authButton"
-        />
-        <input
-        type="submit"
-        class="button button--primary"
-        value="Get Token from Vault"
-        id="tokenGrabber"
-      />
-      </div>
 
-      <div>
-        <ul id="secretList" class="list gutter"></ul>
-      </div>
+      <input type="submit" class="button button--primary" value="Login to Vault" id="authButton" />
+      <input type="submit" class="button button--primary" value="Get Token from Vault" id="tokenGrabber" />
+    </div>
 
-      <div id="logout" style="display: none">
-        <input type="submit" class="button" value="Logout" id="logoutButton" />
-      </div>
-    </main>
+    <div>
+      <ul id="secretList" class="list gutter"></ul>
+    </div>
 
-    <script src="Notify.js"></script>
-    <script src="common.js"></script>
-    <script src="options.js"></script>
-  </body>
+    <div id="logout" style="display: none">
+      <input type="submit" class="button" value="Logout" id="logoutButton" />
+    </div>
+  </main>
+
+  <script src="Notify.js"></script>
+  <script src="common.js"></script>
+  <script src="options.js"></script>
+</body>
+
 </html>
