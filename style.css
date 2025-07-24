@@ -29,6 +29,7 @@
   --font-xl: 1.25rem;
 
   /* Spacing */
+  --space-xs: 0.25rem;
   --space-sm: 0.5rem;
   --space-md: 0.7rem;
   --space-lg: 1.5rem;
@@ -111,7 +112,7 @@ main {
   justify-content: space-between;
   padding: var(--space-md);
   box-sizing: border-box;
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--space-sm);
 }
 .list__item:hover {
   transform: translateY(-2px);
@@ -123,13 +124,27 @@ main {
 }
 .list__item-text-body {
   color: var(--grey);
+  padding-left: var(--space-sm);
 }
 .list__item-actions {
   margin-top: var(--space-md);
-  text-align: right;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-xs);
 }
 .list__item-actions .button {
-  margin: 0 var(--space-sm);
+  margin: 0 var(--space-xs);
+  padding: var(--space-xs);
+  width: 2.25rem;
+  height: 2.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.list__item-actions .button .icon--inline {
+  width: 1.25rem;
+  height: 1.25rem;
 }
 
 /* Buttons */
@@ -176,7 +191,7 @@ main {
 .form-group { margin-bottom: var(--space-lg); }
 .label {
   display: block;
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--space-sm);
   font-weight: 500;
 }
 input, select, textarea {
@@ -189,8 +204,8 @@ input, select, textarea {
   background: var(--color-surface);
   color: var(--color-text);
   box-sizing: border-box;
-  margin-top: 0.5rem;
-  margin-bottom: 0.5rem;
+  margin-top: var(--space-sm);
+  margin-bottom: var(--space-sm);
 }
 input:focus, select:focus, textarea:focus {
   border-color: var(--color-primary);
