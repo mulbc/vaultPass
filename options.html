@@ -41,6 +41,22 @@
       </label>
 
       <label class="label">
+        KV Stores:
+        <div id="storePathsContainer" class="kv-list">
+          <input
+            type="text"
+            class="input store-path"
+            name="storePath"
+            placeholder="Path to the KV store within Vault"
+            value="secret/vaultPass"
+          />
+        </div>
+        <button id="addStorePathButton" class="button button--secondary button--small" type="button">
+          + Add KV Store
+        </button>
+      </label>
+
+      <label class="label">
         Auth Method:
         <input type="text" list="mounts" name="authMount" id="authMount" class="input" />
         <datalist id="mounts">
@@ -51,11 +67,6 @@
         </datalist>
       </label>
 
-      <label class="label">
-        KV Store:
-        <input type="text" class="input" name="store" id="storeBox" placeholder="Path to the KV store within Vault"
-          value="secret/vaultPass" />
-      </label>
 
       <input type="submit" class="button button--primary" value="Login to Vault" id="authButton" />
       <input type="submit" class="button button--primary" value="Get Token from Vault" id="tokenGrabber" />

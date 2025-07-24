@@ -279,6 +279,42 @@ input:focus, select:focus, textarea:focus {
 }
 
 
+.gutter {
+  margin-bottom: 1rem;
+}
+
+.kv-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.kv-item {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.kv-path {
+  flex: 1;
+}
+
+.kv-remove {
+  border: 1px solid var(--color-border);
+  background-color: var(--grey-subtle);
+  color: var(--grey);
+  padding: 0.3rem 0.6rem;
+  cursor: pointer;
+  font-size: 0.8rem;
+  border-radius: 2px;
+  transition: all 0.2s ease-in-out;
+}
+
+.kv-remove:hover {
+  background-color: var(--red);
+  color: white;
+  border-color: var(--red-alt);
+
 /* Dark Mode */
 @media (prefers-color-scheme: dark) {
   :root {
