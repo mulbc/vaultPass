@@ -17,14 +17,14 @@ docker run \
     --publish 10636:10636 \
     --pod new:vaultpass-dev \
     --rm \
-    vault
+    docker.io/hashicorp/vault:latest
 
 docker run \
     --rm \
     --detach \
     --name=dev-ldap \
     --pod vaultpass-dev \
-    docker.io/rroemhild/test-openldap:latest
+    ghcr.io/rroemhild/docker-test-openldap:master
 
 VAULT_SETUP="
 # Login to Vault
