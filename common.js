@@ -1,6 +1,5 @@
-/* eslint-disable no-console */
 /* eslint-disable no-unused-vars */
-/* global browser chrome */
+/* global chrome */
 
 function storePathComponents(storePath) {
   let path = 'secret/vaultPass';

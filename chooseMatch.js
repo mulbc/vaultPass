@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 /* global chrome */
 
 window.addEventListener('message', (event) => {
@@ -22,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function populateMatches(matches) {
   const matchesListEl = document.getElementById('matchesList');
   if (!matchesListEl) {
+    // eslint-disable-next-line quotes
     console.error("Element with ID 'matchesList' not found.");
     return;
   }

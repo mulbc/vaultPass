@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-/* global browser */
 /* global chrome */
 // We can only access the TABs DOM with this script.
 // It will get the credentials via message passing from the popup

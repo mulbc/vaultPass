@@ -13,7 +13,6 @@ class Notify {
    * @returns this
    */
   error(message, options) {
-    // eslint-disable-next-line
     return this.message({ level: 'error', message, ...options });
   }
 
@@ -25,7 +24,6 @@ class Notify {
    * @returns this
    */
   success(message, options) {
-    // eslint-disable-next-line
     return this.message({ level: 'success', message, ...options });
   }
 
@@ -37,7 +35,6 @@ class Notify {
    * @returns this
    */
   info(message, options) {
-    // eslint-disable-next-line
     return this.message({ level: 'info', message, ...options });
   }
 

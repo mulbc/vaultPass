@@ -1,6 +1,5 @@
-/* eslint-disable no-console */
 /* eslint-disable no-prototype-builtins */
-/* global browser Notify storePathComponents */
+/* global Notify storePathComponents */
 
 const notify = new Notify(document.querySelector('#notify'));
 const resultList = document.getElementById('resultList');

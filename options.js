@@ -1,5 +1,4 @@
-/* eslint-disable no-console */
-/* global browser Notify storePathComponents */
+/* global Notify storePathComponents */
 
 const notify = new Notify(document.querySelector('#notify'));
 async function mainLoaded() {

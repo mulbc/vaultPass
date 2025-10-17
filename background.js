@@ -1,5 +1,4 @@
-/* eslint-disable no-console */
-/* global chrome */
+/* global chrome URL */
 
 const idealTokenTTL = '24h';
 const tokenCheckAlarm = 'tokenCheck';
