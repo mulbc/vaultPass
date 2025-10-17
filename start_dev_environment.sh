@@ -63,4 +63,4 @@ docker cp "$GIT_ROOT/dev_default.hcl" dev-vault:/
 
 docker exec -it --env 'VAULT_ADDR=http://127.0.0.1:8200' dev-vault sh -c "$VAULT_SETUP"
 
-printf "\n\nDEV ENVIRONMENT STARTED!\n  Root token: myroot,\n  Vault web address: http://127.0.0.1:8200/ui\n\n  Username test user: mitchellh\n  Username test userpassword: foo\n\n  LDAP test user: bender\n  LDAP test userpassword: bender\n  LDAP test admin: professor\n  LDAP test adminpassword: professor"
+printf "\n\nDEV ENVIRONMENT STARTED!\n  Root token: myroot\n  Vault web address: http://127.0.0.1:8200/ui\n\n  Username test user: mitchellh\n  Username test userpassword: foo\n\n  LDAP test user: bender\n  LDAP test userpassword: bender\n  LDAP test admin: professor\n  LDAP test adminpassword: professor"
