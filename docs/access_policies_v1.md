@@ -17,6 +17,7 @@ The files provided here are solely meant as examples and very likely do not expr
 ## Default Policy
 
 default.hcl:
+
 ```hcl
 [...]
 
@@ -34,6 +35,7 @@ path "secret/vaultPass/*" {
   ]
 }
 ```
+
 `vault write /sys/policy/default policy=@default.hcl`
 
 ## Organsational policy
@@ -42,6 +44,7 @@ Assuming that `org1` is a group in your Vault installation - this would be the p
 Repeat this for every group that needs access to VaultPass.
 
 org1.hcl:
+
 ```hcl
 # Allow org1 full access to their credentials
 path "secret/vaultPass/org1/*" {
@@ -62,14 +65,14 @@ path "secret/vaultPass/org1/*" {
 Here is an example of how to fill your new group with a test credential:
 
 testcreds.json:
+
 ```json
 {
   "title": "Just testing",
   "username": "testUser",
   "password": "abc123",
-  "comment": "This is a test entry",
+  "comment": "This is a test entry"
 }
-
 ```
 
 `vault kv put secret/vaultPass/org1/e @testcreds.json`

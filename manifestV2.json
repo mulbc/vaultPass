@@ -37,7 +37,5 @@
       "id": "addon@blum.coffee"
     }
   },
-  "web_accessible_resources": [
-    "chooseMatch.html"
-  ]
+  "web_accessible_resources": ["chooseMatch.html"]
 }

@@ -307,13 +307,24 @@ async function tokenGrabberClick() {
   }
   await browser.storage.sync.set({ storePath: storePath.value });
   const vaultServer = document.getElementById('serverBox');
-  const [currentTab] = await browser.tabs.query({ active: true, currentWindow: true });
+  const [currentTab] = await browser.tabs.query({
+    active: true,
+    currentWindow: true,
+  });
 
   try {
     await browser.tabs.sendMessage(currentTab.id, { message: 'fetch_token' });
   } catch (err) {
-    if (!currentTab || !currentTab.url || !currentTab.url.startsWith(vaultServer.value)) {
-      notify.clear().error(`Please navigate to ${vaultServer.value} before grabbing the token.`);
+    if (
+      !currentTab ||
+      !currentTab.url ||
+      !currentTab.url.startsWith(vaultServer.value)
+    ) {
+      notify
+        .clear()
+        .error(
+          `Please navigate to ${vaultServer.value} before grabbing the token.`
+        );
       return;
     } else {
       notify.clear().error(err.message);

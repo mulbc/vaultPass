@@ -43,12 +43,13 @@
 
 /* Global layout */
 /* Popup dimensions */
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   width: var(--popup-width);
   /* let height auto-size to content */
-  font-family: "Inter", sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: var(--font-base);
   color: var(--color-text);
   background: var(--color-bg);
@@ -60,7 +61,8 @@ body {
 }
 
 /* Header flows normally */
-.header, header {
+.header,
+header {
   color: white;
   background: linear-gradient(90deg, var(--blue), var(--blue-alt));
   padding-bottom: var(--space-md);
@@ -81,17 +83,39 @@ main {
 }
 
 /* Utility classes */
-.p-sm { padding: var(--space-sm) !important; }
-.p-md { padding: var(--space-md) !important; }
-.p-lg { padding: var(--space-lg) !important; }
-.m-sm { margin: var(--space-sm) !important; }
-.m-md { margin: var(--space-md) !important; }
-.m-lg { margin: var(--space-lg) !important; }
-.flex { display: flex !important; }
-.flex-col { flex-direction: column !important; }
-.items-center { align-items: center !important; }
-.justify-between { justify-content: space-between !important; }
-.text-secondary { color: var(--color-text-secondary) !important; }
+.p-sm {
+  padding: var(--space-sm) !important;
+}
+.p-md {
+  padding: var(--space-md) !important;
+}
+.p-lg {
+  padding: var(--space-lg) !important;
+}
+.m-sm {
+  margin: var(--space-sm) !important;
+}
+.m-md {
+  margin: var(--space-md) !important;
+}
+.m-lg {
+  margin: var(--space-lg) !important;
+}
+.flex {
+  display: flex !important;
+}
+.flex-col {
+  flex-direction: column !important;
+}
+.items-center {
+  align-items: center !important;
+}
+.justify-between {
+  justify-content: space-between !important;
+}
+.text-secondary {
+  color: var(--color-text-secondary) !important;
+}
 
 /* Credential list/card layout */
 .list {
@@ -105,7 +129,7 @@ main {
 .list__item {
   background: var(--color-surface);
   border-radius: var(--radius);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s, box-shadow 0.2s;
   display: flex;
   flex-direction: column;
@@ -116,7 +140,7 @@ main {
 }
 .list__item:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 .list__item.disabled {
   opacity: 0.5;
@@ -161,7 +185,7 @@ main {
 }
 .button:hover {
   background: var(--grey-light);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   transform: translateY(-1px);
 }
 .button:focus {
@@ -188,13 +212,17 @@ main {
 }
 
 /* Forms */
-.form-group { margin-bottom: var(--space-lg); }
+.form-group {
+  margin-bottom: var(--space-lg);
+}
 .label {
   display: block;
   margin-bottom: var(--space-sm);
   font-weight: 500;
 }
-input, select, textarea {
+input,
+select,
+textarea {
   width: 100%;
   padding: var(--space-sm);
   border: 1px solid var(--color-border);
@@ -207,9 +235,11 @@ input, select, textarea {
   margin-top: var(--space-sm);
   margin-bottom: var(--space-sm);
 }
-input:focus, select:focus, textarea:focus {
+input:focus,
+select:focus,
+textarea:focus {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(79,70,229,0.2);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
   outline: none;
 }
 
@@ -220,7 +250,7 @@ input:focus, select:focus, textarea:focus {
   justify-content: space-between;
   padding: var(--space-md);
   border-radius: var(--radius);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   margin-bottom: var(--space-md);
   color: #fff;
 }
@@ -231,9 +261,18 @@ input:focus, select:focus, textarea:focus {
   cursor: pointer;
   line-height: 1;
 }
-.notify--error { background: var(--red); border-left: 5px solid var(--red-alt); }
-.notify--success { background: var(--green); border-left: 5px solid var(--green-alt); }
-.notify--info    { background: var(--blue); border-left: 5px solid var(--blue-alt); }
+.notify--error {
+  background: var(--red);
+  border-left: 5px solid var(--red-alt);
+}
+.notify--success {
+  background: var(--green);
+  border-left: 5px solid var(--green-alt);
+}
+.notify--info {
+  background: var(--blue);
+  border-left: 5px solid var(--blue-alt);
+}
 
 /* Tabs Component */
 .tabs {
@@ -251,7 +290,7 @@ input:focus, select:focus, textarea:focus {
   font-size: var(--font-lg);
   color: var(--color-text);
   background: transparent;
-  text-decoration: none;          /* ← no underline */
+  text-decoration: none; /* ← no underline */
   cursor: pointer;
 
   /* border = capsule on top of baseline */
@@ -273,11 +312,10 @@ input:focus, select:focus, textarea:focus {
 .tab--active {
   color: var(--color-text);
   background: var(--color-surface);
-  border-color: var(--color-border);   /* draws the capsule border */
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  border-color: var(--color-border); /* draws the capsule border */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   font-weight: 600;
 }
-
 
 /* Dark Mode */
 @media (prefers-color-scheme: dark) {
@@ -287,5 +325,7 @@ input:focus, select:focus, textarea:focus {
     --color-text: #f9fafb;
     --color-text-secondary: #9ca3af;
   }
-  .list__item { box-shadow: 0 1px 3px rgba(0,0,0,0.5); }
+  .list__item {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  }
 }

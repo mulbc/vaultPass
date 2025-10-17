@@ -1,6 +1,6 @@
 # Privacy Policy for VaultPass
 
-_Last Updated: 21-Nov-2024
+\_Last Updated: 21-Nov-2024
 
 Welcome to VaultPass! We are committed to maintaining the trust and confidence of the users of our browser extension. This Privacy Policy provides detailed information on how we collect, use, and protect your personal information when you use VaultPass.
 
