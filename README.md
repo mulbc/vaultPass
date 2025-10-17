@@ -27,7 +27,6 @@ The token grabber feature allows this plugin to effectively use any Vault authen
 
 2. By default, secrets should be created using the following path template:
    `/secret/vaultPass/[someOrg]/[url]` where:
-
    - `someOrg` will be some organisational level in your company to separate access levels
      - You can activate and deactivate these "folders" in options
    - `url` is a RegEx used to match the website's URL that the credentials are for

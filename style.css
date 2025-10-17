@@ -130,7 +130,9 @@ main {
   background: var(--color-surface);
   border-radius: var(--radius);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -181,7 +183,10 @@ main {
   font-size: var(--font-base);
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+  transition:
+    background 0.2s,
+    box-shadow 0.2s,
+    transform 0.2s;
 }
 .button:hover {
   background: var(--grey-light);
@@ -228,7 +233,9 @@ textarea {
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
   font-size: var(--font-base);
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
   background: var(--color-surface);
   color: var(--color-text);
   box-sizing: border-box;
@@ -301,7 +308,11 @@ textarea:focus {
 
   /* float above the line */
   margin-bottom: -1px;
-  transition: color 0.2s, background 0.2s, border-color 0.2s, box-shadow 0.2s;
+  transition:
+    color 0.2s,
+    background 0.2s,
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
 .tab:hover {
