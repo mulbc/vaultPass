@@ -134,11 +134,13 @@ main {
     transform 0.2s,
     box-shadow 0.2s;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: center;
   justify-content: space-between;
   padding: var(--space-md);
   box-sizing: border-box;
   margin-bottom: var(--space-sm);
+  gap: var(--space-md);
 }
 .list__item:hover {
   transform: translateY(-2px);
@@ -148,16 +150,22 @@ main {
   opacity: 0.5;
   text-decoration: line-through;
 }
+.list__item-primary-content {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}
 .list__item-text-body {
   color: var(--grey);
   padding-left: var(--space-sm);
+  display: block;
 }
 .list__item-actions {
-  margin-top: var(--space-md);
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: flex-end;
   gap: var(--space-xs);
+  flex-shrink: 0;
 }
 .list__item-actions .button {
   margin: 0 var(--space-xs);
