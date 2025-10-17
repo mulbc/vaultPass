@@ -1,12 +1,10 @@
-/* global chrome URL */
+/* global URL */
 
 const idealTokenTTL = '24h';
 const tokenCheckAlarm = 'tokenCheck';
 const tokenRenewAlarm = 'tokenRenew';
 
-if (!chrome.browserAction) {
-  chrome.browserAction = chrome.action;
-}
+// Manifest V3 uses browser.action instead of browserAction
 
 setupTokenAutoRenew(1800);
 refreshTokenTimer();
@@ -17,7 +15,7 @@ const storage = {
     return function (key, defaultValue) {
       return new Promise(function (resolve, reject) {
         try {
-          chrome.storage[storageType].get([key], function (result) {
+          browser.storage[storageType].get([key], function (result) {
             const value = result[key] || defaultValue || null;
             resolve(value);
           });
@@ -146,13 +144,13 @@ async function autoFillSecrets(message, sender) {
     }
   }
   if (loginCount > 0) {
-    chrome.browserAction.setBadgeText({ text: '*', tabId: sender.tab.id });
+    browser.browserAction.setBadgeText({ text: '*', tabId: sender.tab.id });
   }
 
   // If there is only one match, fill the credentials, otherwise prompt the user
   if (matches.length === 1) {
     const m = matches[0];
-    chrome.tabs.sendMessage(sender.tab.id, {
+    browser.tabs.sendMessage(sender.tab.id, {
       message: 'fill_creds',
       username: m.username,
       password: m.password,
@@ -163,7 +161,7 @@ async function autoFillSecrets(message, sender) {
 }
 
 function promptUserForChoice(matches, tabId) {
-  chrome.tabs.sendMessage(tabId, {
+  browser.tabs.sendMessage(tabId, {
     type: 'show_matches_popup_iframe',
     matches: matches,
   });
@@ -201,11 +199,11 @@ async function renewToken(force = false) {
         );
       }
 
-      await chrome.browserAction.setBadgeBackgroundColor({ color: '#1c98ed' });
+      await browser.browserAction.setBadgeBackgroundColor({ color: '#1c98ed' });
     } catch (e) {
       console.log(e);
-      await chrome.browserAction.setBadgeBackgroundColor({ color: '#FF0000' });
-      await chrome.browserAction.setBadgeText({ text: '!' });
+      await browser.browserAction.setBadgeBackgroundColor({ color: '#FF0000' });
+      await browser.browserAction.setBadgeText({ text: '!' });
 
       refreshTokenTimer();
     }
@@ -213,32 +211,32 @@ async function renewToken(force = false) {
 }
 
 function setupTokenAutoRenew(interval = 1800) {
-  chrome.alarms.get(tokenRenewAlarm, function (exists) {
+  browser.alarms.get(tokenRenewAlarm, function (exists) {
     if (exists) {
-      chrome.alarms.clear(tokenRenewAlarm);
+      browser.alarms.clear(tokenRenewAlarm);
     }
 
-    chrome.alarms.create(tokenRenewAlarm, {
+    browser.alarms.create(tokenRenewAlarm, {
       periodInMinutes: interval / 60,
     });
   });
 }
 
 function refreshTokenTimer(delay = 45) {
-  chrome.alarms.get(tokenCheckAlarm, function (exists) {
+  browser.alarms.get(tokenCheckAlarm, function (exists) {
     if (exists) {
-      chrome.alarms.clear(tokenCheckAlarm);
+      browser.alarms.clear(tokenCheckAlarm);
     }
 
-    chrome.alarms.create(tokenCheckAlarm, {
+    browser.alarms.create(tokenCheckAlarm, {
       delayInMinutes: delay / 60,
     });
   });
 }
 
 function setupIdleListener() {
-  if (!chrome.idle.onStateChanged.hasListener(newStateHandler)) {
-    chrome.idle.onStateChanged.addListener(newStateHandler);
+  if (!browser.idle.onStateChanged.hasListener(newStateHandler)) {
+    browser.idle.onStateChanged.addListener(newStateHandler);
   }
 }
 
@@ -253,7 +251,7 @@ async function newStateHandler(newState) {
   }
 }
 
-chrome.alarms.onAlarm.addListener(async function (alarm) {
+browser.alarms.onAlarm.addListener(async function (alarm) {
   if (alarm.name === tokenCheckAlarm) {
     await renewToken();
   }
@@ -263,7 +261,7 @@ chrome.alarms.onAlarm.addListener(async function (alarm) {
   }
 });
 
-chrome.runtime.onMessage.addListener(function (message, sender) {
+browser.runtime.onMessage.addListener(function (message, sender) {
   if (message.type === 'auto_fill_secrets') {
     setupIdleListener();
     autoFillSecrets(message, sender).catch(console.error);
@@ -275,11 +273,11 @@ chrome.runtime.onMessage.addListener(function (message, sender) {
 });
 
 // Listener to catch the fill_creds message and then forward it to the active tab
-chrome.runtime.onMessage.addListener((request) => {
+browser.runtime.onMessage.addListener((request) => {
   if (request.message === 'fill_creds') {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    browser.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (tabs.length) {
-        chrome.tabs.sendMessage(tabs[0].id, request);
+        browser.tabs.sendMessage(tabs[0].id, request);
       }
     });
   }

@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "VaultPass",
   "description": "A Chrome extension to leverage Hashicorp Vault as Credential Storage for teams",
-  "version": "2.3.5",
+  "version": "2.4",
   "browser_action": {
     "default_icon": "icons/logo128.png",
     "default_popup": "popup.html",
@@ -34,7 +34,10 @@
   ],
   "browser_specific_settings": {
     "gecko": {
-      "id": "addon@blum.coffee"
+      "id": "addon@blum.coffee",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
     }
   },
   "web_accessible_resources": ["chooseMatch.html"]
