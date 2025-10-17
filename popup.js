@@ -81,18 +81,25 @@ async function querySecrets(searchString, manualSearch) {
           return;
         }
         for (const element of (await secretsInPath.json()).data.keys) {
-          const pattern = new RegExp(element);
+          // Vault returns keys as stored (e.g., a%2Fb)
+          // Decode it for pattern matching (a%2Fb -> a/b)
+          const decodedElement = decodeURIComponent(element);
+          const pattern = new RegExp(decodedElement);
           const patternMatches =
-            pattern.test(searchString) || element.includes(searchString);
+            pattern.test(searchString) || decodedElement.includes(searchString);
           if (patternMatches) {
-            const urlPath = `${vaultServerAddress}/v1/${storeComponents.root}/data/${storeComponents.subPath}/${secret}${element}`;
+            // Encode the element again for the URL since Vault will decode it
+            // element is a%2Fb, we need to send a%252Fb so Vault decodes to a%2Fb
+            const encodedElement = encodeURIComponent(element);
+            const urlPath = `${vaultServerAddress}/v1/${storeComponents.root}/data/${storeComponents.subPath}/${secret}${encodedElement}`;
             const credentials = await getCredentials(urlPath);
             const credentialsSets = extractCredentialsSets(
               credentials.data.data
             );
 
             for (const item of credentialsSets) {
-              addCredentialsToList(item, element, resultList);
+              // Display the decoded element name to the user
+              addCredentialsToList(item, decodedElement, resultList);
 
               matches++;
             }
@@ -137,6 +144,14 @@ const searchHandler = function (e) {
 };
 
 searchInput.addEventListener('keyup', searchHandler);
+
+// Add Key button handler
+const addKeyButton = document.getElementById('addKeyButton');
+if (addKeyButton) {
+  addKeyButton.addEventListener('click', function () {
+    window.location.href = '/addKey.html';
+  });
+}
 
 function extractCredentialsSets(data) {
   const keys = Object.keys(data);

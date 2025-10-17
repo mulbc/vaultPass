@@ -31,7 +31,19 @@
 
     <main class="main">
       <div role="alert" id="notify" aria-live="assertive"></div>
-      <label for="vault-search">Search Secrets:</label>
+      <div
+        class="flex justify-between items-center"
+        style="margin-bottom: 1rem"
+      >
+        <label for="vault-search">Search Secrets:</label>
+        <button
+          id="addKeyButton"
+          class="button button--primary"
+          title="Add new key"
+        >
+          + Add Key
+        </button>
+      </div>
       <input
         type="search"
         id="vault-search"

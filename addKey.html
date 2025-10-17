@@ -1,0 +1,114 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Add Key - VaultPass</title>
+    <meta charset="utf-8" />
+    <script
+      type="application/javascript"
+      src="browser-polyfill.min.js"
+    ></script>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <header class="header">
+      <div class="header__container">
+        <h1 class="h1 title">Add Key</h1>
+        <nav role="navigation" class="menu" aria-label="Main Menu">
+          <div class="tabs">
+            <a href="/popup.html" class="tab" data-page="keys">Keys</a>
+            <a href="/options.html" class="tab" data-page="options">Options</a>
+          </div>
+        </nav>
+      </div>
+    </header>
+
+    <main class="main">
+      <div role="alert" id="notify" aria-live="assertive"></div>
+
+      <form id="addKeyForm">
+        <div class="form-group">
+          <label for="secretPath" class="label">
+            Secret Path:
+            <span class="text-secondary" style="font-weight: normal">
+              Select where to store this key
+            </span>
+          </label>
+          <select
+            id="secretPath"
+            name="secretPath"
+            required
+            aria-required="true"
+          >
+            <option value="">-- Select a path --</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="urlRegex" class="label">
+            URL Pattern (regex):
+            <span class="text-secondary" style="font-weight: normal">
+              e.g., ^example\.com.* (used as KV object name)
+            </span>
+          </label>
+          <input
+            type="text"
+            id="urlRegex"
+            name="urlRegex"
+            placeholder="^example\.com.*"
+            required
+            aria-required="true"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="username" class="label">Username:</label>
+          <input
+            type="text"
+            id="username"
+            name="username"
+            placeholder="Enter username"
+            required
+            aria-required="true"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="password" class="label">Password:</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="Enter password"
+            required
+            aria-required="true"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="title" class="label">
+            Title (optional):
+            <span class="text-secondary" style="font-weight: normal">
+              A friendly name for this key
+            </span>
+          </label>
+          <input
+            type="text"
+            id="title"
+            name="title"
+            placeholder="e.g., Example Site Login"
+          />
+        </div>
+
+        <div class="flex justify-between" style="gap: 1rem">
+          <button type="button" id="cancelButton" class="button">Cancel</button>
+          <button type="submit" class="button button--primary">Save Key</button>
+        </div>
+      </form>
+    </main>
+
+    <script src="Notify.js"></script>
+    <script src="common.js"></script>
+    <script src="addKey.js"></script>
+  </body>
+</html>
