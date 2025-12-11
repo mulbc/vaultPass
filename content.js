@@ -3,7 +3,12 @@
 // It will get the credentials via message passing from the popup
 // It is also responsible to copy strings to the clipboard
 
-browser.runtime.onMessage.addListener((request) => {
+console.log('VaultPass: Content script loaded');
+
+// We need sender and sendResponse so that the async communication works
+// otherwise users cannot login to vault using their token
+// eslint-disable-next-line no-unused-vars
+browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
   switch (request.message) {
     case 'copy_to_clipboard':
       handleCopyToClipboard(request);
@@ -17,8 +22,12 @@ browser.runtime.onMessage.addListener((request) => {
       break;
     case 'fetch_token':
       handleFetchToken();
+      // If handleFetchToken is async or needs to send a response back,
+      // we should handle it here. For now, it sends a message back to runtime.
       break;
   }
+  // Return false because we don't need to keep the message channel open for an async response
+  return false;
 });
 
 function handleCopyToClipboard(request) {

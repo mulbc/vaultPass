@@ -311,6 +311,27 @@ async function tokenGrabberClick() {
     currentWindow: true,
   });
 
+  console.log('TokenGrabber: Target Tab', currentTab);
+
+  if (!currentTab) {
+    notify.error('No active tab found.');
+    return;
+  }
+
+  // Check if we are trying to grab token from the options page itself
+  if (
+    currentTab.url &&
+    (currentTab.url.startsWith('moz-extension://') ||
+      currentTab.url.startsWith('chrome-extension://'))
+  ) {
+    notify
+      .clear()
+      .error(
+        'You are on the Options page. Please go to the Vault tab, click the extension icon, click "Options", and then click "Get Token".'
+      );
+    return;
+  }
+
   try {
     await browser.tabs.sendMessage(currentTab.id, { message: 'fetch_token' });
   } catch (err) {
@@ -326,7 +347,8 @@ async function tokenGrabberClick() {
         );
       return;
     } else {
-      notify.clear().error(err.message);
+      console.error('TokenGrabber Error:', err);
+      notify.clear().error(`Error contacting Vault tab: ${err.message}`);
     }
   }
 }
