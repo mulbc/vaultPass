@@ -292,4 +292,63 @@ browser.runtime.onMessage.addListener((request) => {
       }
     });
   }
+
+  if (request.type === 'start_web_login_flow') {
+    startWebLoginFlow(request.vaultServer);
+  }
 });
+
+async function startWebLoginFlow(vaultServer) {
+  const loginUrl = `${vaultServer}/ui/vault/auth`;
+  const tab = await browser.tabs.create({ url: loginUrl });
+
+  const pollInterval = 2000; // 2 seconds
+  const maxPolls = 150; // 5 minutes total
+  let pollCount = 0;
+
+  const poller = setInterval(async () => {
+    pollCount++;
+    if (pollCount > maxPolls) {
+      clearInterval(poller);
+      // notify user somehow? (cannot notify popup if closed)
+      return;
+    }
+
+    try {
+      // Check if tab is still open
+      const currentTab = await browser.tabs.get(tab.id);
+      if (!currentTab) {
+        clearInterval(poller);
+        return;
+      }
+
+      // Try to fetch token
+      await browser.tabs.sendMessage(tab.id, { message: 'fetch_token' });
+    } catch {
+      // Ignore errors while polling
+    }
+  }, pollInterval);
+
+  // Listener to stop polling when token is found
+  const tokenListener = async (message) => {
+    if (message.type === 'fetch_token') {
+      clearInterval(poller);
+      browser.runtime.onMessage.removeListener(tokenListener);
+
+      // Token found! Process it just like options.js would have
+      await browser.storage.local.set({ vaultToken: message.token });
+      await browser.storage.sync.set({ vaultAddress: message.address });
+
+      // Start auto-renew
+      browser.alarms.create(tokenCheckAlarm, {
+        delayInMinutes: 45 / 60,
+      });
+      await renewToken();
+
+      // We need to notify options page if it's open, but mostly just saving it is enough
+      // The user will see they are logged in next time they open popup/options
+      console.log('login successful via background script');
+    }
+  };
+  browser.runtime.onMessage.addListener(tokenListener);
+}

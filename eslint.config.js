@@ -17,6 +17,8 @@ export default [
         MutationObserver: 'readonly',
         HTMLFormElement: 'readonly',
         importScripts: 'readonly',
+        setInterval: 'readonly',
+        clearInterval: 'readonly',
       },
     },
     rules: {

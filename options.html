@@ -39,33 +39,6 @@
         </label>
 
         <label class="label">
-          Username:
-          <input type="text" class="input" name="login" id="loginBox" />
-        </label>
-
-        <label class="label">
-          Password:
-          <input type="password" class="input" name="pass" id="passBox" />
-        </label>
-
-        <label class="label">
-          Auth Method:
-          <input
-            type="text"
-            list="mounts"
-            name="authMount"
-            id="authMount"
-            class="input"
-          />
-          <datalist id="mounts">
-            <option>ldap</option>
-            <option>userpass</option>
-            <option>radius</option>
-            <option>okta</option>
-          </datalist>
-        </label>
-
-        <label class="label">
           KV Store:
           <input
             type="text"
@@ -80,15 +53,36 @@
         <input
           type="submit"
           class="button button--primary"
-          value="Login to Vault"
-          id="authButton"
+          value="Login via Web"
+          id="webLoginButton"
         />
-        <input
-          type="submit"
-          class="button button--primary"
-          value="Get Token from Vault"
-          id="tokenGrabber"
-        />
+
+        <div
+          style="margin-top: 1em; border-top: 1px solid #ccc; padding-top: 1em"
+        >
+          <label class="label">
+            Manual Token:
+            <input
+              type="password"
+              class="input"
+              name="manualToken"
+              id="manualTokenBox"
+              placeholder="Paste token here or use 'Get Token'"
+            />
+          </label>
+          <input
+            type="submit"
+            class="button"
+            value="Save Token"
+            id="saveTokenButton"
+          />
+          <input
+            type="submit"
+            class="button"
+            value="Get Token from Vault Tab"
+            id="tokenGrabber"
+          />
+        </div>
       </div>
 
       <div>

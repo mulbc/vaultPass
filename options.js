@@ -4,14 +4,15 @@ const notify = new Notify(document.querySelector('#notify'));
 async function mainLoaded() {
   // get inputs from form elements, server URL, login and password
   const vaultServer = document.getElementById('serverBox');
-  const login = document.getElementById('loginBox');
-  const auth = document.getElementById('authMount');
   const store = document.getElementById('storeBox');
 
   // put listener on login button
   document
-    .getElementById('authButton')
-    .addEventListener('click', authButtonClick, false);
+    .getElementById('webLoginButton')
+    .addEventListener('click', webLoginButtonClick, false);
+  document
+    .getElementById('saveTokenButton')
+    .addEventListener('click', saveManualTokenClick, false);
   document
     .getElementById('tokenGrabber')
     .addEventListener('click', tokenGrabberClick, false);
@@ -25,16 +26,7 @@ async function mainLoaded() {
     vaultServer.value = vaultServerAddress;
     vaultServer.parentNode.classList.add('is-dirty');
   }
-  const username = (await browser.storage.sync.get('username')).username;
-  if (username) {
-    login.value = username;
-    login.parentNode.classList.add('is-dirty');
-  }
-  const authMethod = (await browser.storage.sync.get('authMethod')).authMethod;
-  if (authMethod) {
-    auth.value = authMethod;
-    auth.parentNode.classList.add('is-dirty');
-  }
+
   const storePath = (await browser.storage.sync.get('storePath')).storePath;
   if (storePath) {
     store.value = storePath;
@@ -213,89 +205,60 @@ async function secretChanged({ checkbox, item }) {
   }
 }
 
-// invoked after user clicks "login to vault" button, if all fields filled in, and URL passed regexp check.
-async function authToVault(
-  vaultServer,
-  username,
-  password,
-  authMethod,
-  storePath
-) {
-  const apiResponse = await fetch(
-    `${vaultServer}/v1/auth/${authMethod}/login/${username}`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ password: password }),
-    }
-  );
-  if (!apiResponse.ok) {
-    notify.error(`
-      There was an error while calling<br>
-      ${vaultServer}/v1/auth/${authMethod}/login/${username}<br>
-      Please check if your username, password and authentication method are correct.
-    `);
-    return;
-  }
-  const authInfo = (await apiResponse.json()).auth;
-  const token = authInfo.client_token;
-  await browser.storage.local.set({ vaultToken: token });
-  await querySecrets(vaultServer, token, authInfo.policies, storePath);
+// Function removed (no longer used)
 
-  browser.runtime.sendMessage({
-    type: 'auto_renew_token',
-  });
-
-  // If token expires in less than 24 hour, try to extend it to avoid having to re-logon too often
-  if (authInfo.lease_duration < 86400) {
-    await fetch(`${vaultServer}/v1/auth/token/renew-self`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Vault-Token': token,
-      },
-      body: JSON.stringify({ increment: '24h' }),
-    });
-  }
-}
-
-async function authButtonClick() {
-  // get inputs from form elements, server URL, login and password
+async function webLoginButtonClick() {
   const vaultServer = document.getElementById('serverBox');
-  const login = document.getElementById('loginBox');
-  const authMount = document.getElementById('authMount');
-  const pass = document.getElementById('passBox');
   const storePath = document.getElementById('storeBox');
-  // verify input not empty. TODO: verify correct URL format.
-  if (
-    vaultServer.value.length > 0 &&
-    login.value.length > 0 &&
-    pass.value.length > 0
-  ) {
+
+  if (vaultServer.value.length > 0) {
     if (storePath.value.length > 0 && storePath.value[0] === '/') {
       storePath.value = storePath.value.substring(1);
     }
 
-    // if input fields are not empty, attempt authorization to specified vault server URL.
     await browser.storage.sync.set({ vaultAddress: vaultServer.value });
-    await browser.storage.sync.set({ username: login.value });
-    await browser.storage.sync.set({ authMethod: authMount.value });
     await browser.storage.sync.set({ storePath: storePath.value });
+
+    // Start flow in background script
+    browser.runtime.sendMessage({
+      type: 'start_web_login_flow',
+      vaultServer: vaultServer.value,
+    });
+    notify.info('Web login started in new tab...', { removeOption: false });
+  } else {
+    notify.error('Please enter Vault Server URL.');
+  }
+}
+
+async function saveManualTokenClick() {
+  const vaultServer = document.getElementById('serverBox');
+  const storePath = document.getElementById('storeBox');
+  const manualToken = document.getElementById('manualTokenBox');
+
+  if (vaultServer.value.length > 0 && manualToken.value.length > 0) {
+    if (storePath.value.length > 0 && storePath.value[0] === '/') {
+      storePath.value = storePath.value.substring(1);
+    }
+
+    await browser.storage.sync.set({ vaultAddress: vaultServer.value });
+    await browser.storage.sync.set({ storePath: storePath.value });
+    await browser.storage.local.set({ vaultToken: manualToken.value });
+
     try {
-      await authToVault(
+      await querySecrets(
         vaultServer.value,
-        login.value,
-        pass.value,
-        authMount.value,
+        manualToken.value,
+        null,
         storePath.value
       );
+      notify.success('Token saved successfully!');
+      // Start auto-renew just in case
+      browser.runtime.sendMessage({ type: 'auto_renew_token' });
     } catch (err) {
       notify.clear().error(err.message);
     }
   } else {
-    notify.error('Bad input, must fill in all 3 fields.');
+    notify.error('Please enter Vault Server URL and Token.');
   }
 }
 
