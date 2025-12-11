@@ -1,6 +1,11 @@
 /* global URL */
 importScripts('browser-polyfill.min.js');
 
+// Manifest V3 uses browser.action instead of browserAction
+if (!browser.browserAction) {
+  browser.browserAction = browser.action;
+}
+
 const idealTokenTTL = '24h';
 const tokenCheckAlarm = 'tokenCheck';
 const tokenRenewAlarm = 'tokenRenew';
