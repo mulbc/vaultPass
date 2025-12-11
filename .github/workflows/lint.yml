@@ -49,4 +49,4 @@ jobs:
         run: npm install --save-dev prettier
 
       - name: Run Prettier check
-        run: npx prettier --check "**/*.{js,json,yaml,yml,md,html,css}"
+        run: npx prettier --check "**/*.{js,json,yaml,yml,md,html,css}" '!*.min.js'
