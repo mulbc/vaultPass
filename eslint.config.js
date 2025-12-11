@@ -16,6 +16,7 @@ export default [
         setTimeout: 'readonly',
         MutationObserver: 'readonly',
         HTMLFormElement: 'readonly',
+        importScripts: 'readonly',
       },
     },
     rules: {

@@ -1,4 +1,5 @@
 /* global URL */
+importScripts('browser-polyfill.min.js');
 
 const idealTokenTTL = '24h';
 const tokenCheckAlarm = 'tokenCheck';
@@ -15,10 +16,15 @@ const storage = {
     return function (key, defaultValue) {
       return new Promise(function (resolve, reject) {
         try {
-          browser.storage[storageType].get([key], function (result) {
-            const value = result[key] || defaultValue || null;
-            resolve(value);
-          });
+          browser.storage[storageType]
+            .get([key])
+            .then(function (result) {
+              const value = result[key] || defaultValue || null;
+              resolve(value);
+            })
+            .catch((error) => {
+              reject(error);
+            });
         } catch (error) {
           reject(error);
         }
@@ -211,8 +217,8 @@ async function renewToken(force = false) {
 }
 
 function setupTokenAutoRenew(interval = 1800) {
-  browser.alarms.get(tokenRenewAlarm, function (exists) {
-    if (exists) {
+  browser.alarms.get(tokenRenewAlarm).then((alarm) => {
+    if (alarm) {
       browser.alarms.clear(tokenRenewAlarm);
     }
 
@@ -223,8 +229,8 @@ function setupTokenAutoRenew(interval = 1800) {
 }
 
 function refreshTokenTimer(delay = 45) {
-  browser.alarms.get(tokenCheckAlarm, function (exists) {
-    if (exists) {
+  browser.alarms.get(tokenCheckAlarm).then((alarm) => {
+    if (alarm) {
       browser.alarms.clear(tokenCheckAlarm);
     }
 
@@ -275,7 +281,7 @@ browser.runtime.onMessage.addListener(function (message, sender) {
 // Listener to catch the fill_creds message and then forward it to the active tab
 browser.runtime.onMessage.addListener((request) => {
   if (request.message === 'fill_creds') {
-    browser.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    browser.tabs.query({ active: true, currentWindow: true }).then((tabs) => {
       if (tabs.length) {
         browser.tabs.sendMessage(tabs[0].id, request);
       }
