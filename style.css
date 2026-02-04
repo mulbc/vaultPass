@@ -185,7 +185,7 @@ main {
 .button {
   border: none;
   border-radius: var(--radius);
-  background: var(--grey-subtle);
+  background: var(--color-bg);
   color: var(--color-text);
   padding: var(--space-sm) var(--space-md);
   font-size: var(--font-base);
@@ -325,7 +325,7 @@ textarea:focus {
 
 .tab:hover {
   color: var(--color-text);
-  background: var(--grey-subtle);
+  background: var(--color-bg);
 }
 
 .tab--active {
