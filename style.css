@@ -154,9 +154,14 @@ main {
   flex: 1;
   min-width: 0;
   text-align: left;
+  background-color: var(--grey-subtle);
+  border: 0;
+  border-radius: 5px;
+  cursor: pointer;
+  color: var(--color-text);
 }
 .list__item-text-body {
-  color: var(--grey);
+  color: var(--color-text-secondary);
   padding-left: var(--space-sm);
   display: block;
 }
@@ -185,7 +190,7 @@ main {
 .button {
   border: none;
   border-radius: var(--radius);
-  background: var(--color-bg);
+  background: var(--grey-subtle);
   color: var(--color-text);
   padding: var(--space-sm) var(--space-md);
   font-size: var(--font-base);
@@ -325,7 +330,7 @@ textarea:focus {
 
 .tab:hover {
   color: var(--color-text);
-  background: var(--color-bg);
+  background: var(--grey-subtle);
 }
 
 .tab--active {
@@ -343,6 +348,7 @@ textarea:focus {
     --color-surface: #374151;
     --color-text: #f9fafb;
     --color-text-secondary: #9ca3af;
+    --grey-subtle: #1f2937;
   }
   .list__item {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
