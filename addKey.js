@@ -2,12 +2,16 @@
 
 const notify = new Notify(document.querySelector('#notify'));
 const addKeyForm = document.getElementById('addKeyForm');
+const urlRegexInput = document.getElementById('urlRegex');
 const cancelButton = document.getElementById('cancelButton');
 const secretPathSelect = document.getElementById('secretPath');
 
 async function mainLoaded() {
   // Load available secret paths
   await loadSecretPaths();
+
+  // Pre-fill URL regex input with current tab's hostname
+  await preFillUrlRegexInput();
 
   // Set up event listeners
   addKeyForm.addEventListener('submit', handleFormSubmit);
@@ -39,6 +43,28 @@ async function loadSecretPaths() {
     }
   } catch (err) {
     notify.error(`Error loading secret paths: ${err.message}`);
+  }
+}
+
+async function preFillUrlRegexInput() {
+  let currentUrl;
+
+  const tabs = await browser.tabs.query({ active: true, currentWindow: true });
+  for (let tabIndex = 0; tabIndex < tabs.length; tabIndex++) {
+    const tab = tabs[tabIndex];
+    if (tab.url) {
+      currentUrl = tab.url;
+      break;
+    }
+  }
+
+  if (currentUrl) {
+    // extract hostname from URL and remove "www." prefix if present
+    const hostnameMatch = currentUrl.match(/^https?:\/\/(www\.)?([^/]+)/i);
+
+    if (hostnameMatch) {
+      urlRegexInput.value = hostnameMatch[2];
+    }
   }
 }
 
