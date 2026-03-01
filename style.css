@@ -298,7 +298,7 @@ textarea:focus {
 .tabs {
   display: flex;
   margin-bottom: var(--space-md);
-  /* draw the baseline that active tabs “sit” on */
+  /* draw the baseline that active tabs "sits" on */
   border-bottom: 1px solid var(--color-border);
 }
 
