@@ -98,6 +98,8 @@ async function querySecrets(searchString, manualSearch) {
             );
 
             for (const item of credentialsSets) {
+              // Attach the secret path to the credentials for later use (e.g., deletion)
+              item.secretPath = `${storeComponents.root}/metadata/${storeComponents.subPath}/${secret}${encodedElement}`;
               // Display the decoded element name to the user
               addCredentialsToList(item, decodedElement, resultList);
 
@@ -243,6 +245,19 @@ function addCredentialsToList(credentials, credentialName, list) {
   });
   actions.appendChild(copyPasswordButton);
 
+  const deleteButton = document.createElement('button');
+  deleteButton.classList.add('button');
+  deleteButton.title = 'delete credentials';
+  deleteButton.innerHTML = `
+    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon--inline">
+      <use href="icons/delete.svg#delete"/>
+    </svg>
+  `;
+  deleteButton.addEventListener('click', function () {
+    deleteCredentials(credentials.secretPath);
+  });
+  actions.appendChild(deleteButton);
+
   list.appendChild(item);
 }
 
@@ -289,6 +304,28 @@ async function copyStringToClipboard(string) {
       });
       break;
     }
+  }
+}
+
+async function deleteCredentials(secretPath) {
+  const result = await fetch(`${vaultServerAddress}/v1/${secretPath}`, {
+    method: 'DELETE',
+    headers: {
+      'X-Vault-Token': vaultToken,
+      'Content-Type': 'application/json',
+    },
+  });
+  if (result.ok) {
+    notify.clear().success('Credentials deleted successfully!', {
+      removeOption: false,
+    });
+    // Refresh the list after deletion
+    await querySecrets(currentUrl, searchInput.value.length !== 0);
+  } else {
+    notify.error('Unable to delete credentials...', {
+      removeOption: true,
+    });
+    return;
   }
 }
 
