@@ -233,6 +233,11 @@ main {
 .form-group {
   margin-bottom: var(--space-lg);
 }
+.password-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
 .label {
   display: block;
   margin-bottom: var(--space-sm);
