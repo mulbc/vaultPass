@@ -3,7 +3,9 @@
 const notify = new Notify(document.querySelector('#notify'));
 const addKeyForm = document.getElementById('addKeyForm');
 const urlRegexInput = document.getElementById('urlRegex');
-const generatePasswordButton = document.getElementById('generatePasswordButton');
+const generatePasswordButton = document.getElementById(
+  'generatePasswordButton'
+);
 const cancelButton = document.getElementById('cancelButton');
 const secretPathSelect = document.getElementById('secretPath');
 
