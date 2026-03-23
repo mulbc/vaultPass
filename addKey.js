@@ -1,8 +1,11 @@
-/* global Notify storePathComponents */
+/* global Notify storePathComponents,copyStringToClipboard */
 
 const notify = new Notify(document.querySelector('#notify'));
 const addKeyForm = document.getElementById('addKeyForm');
 const urlRegexInput = document.getElementById('urlRegex');
+const generatePasswordButton = document.getElementById(
+  'generatePasswordButton'
+);
 const cancelButton = document.getElementById('cancelButton');
 const secretPathSelect = document.getElementById('secretPath');
 
@@ -15,6 +18,7 @@ async function mainLoaded() {
 
   // Set up event listeners
   addKeyForm.addEventListener('submit', handleFormSubmit);
+  generatePasswordButton.addEventListener('click', handleGeneratePassword);
   cancelButton.addEventListener('click', handleCancel);
 }
 
@@ -173,6 +177,23 @@ async function handleFormSubmit(event) {
   } catch (err) {
     notify.error(`Error saving key: ${err.message}`);
   }
+}
+
+function handleGeneratePassword() {
+  const length = 20;
+  const charset =
+    'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+~`|}{[]:;?><,./-=';
+  let password = '';
+
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * charset.length);
+    password += charset[randomIndex];
+  }
+  document.getElementById('password').value = password;
+
+  copyStringToClipboard(password);
+
+  notify.success('Generated password copied to clipboard!', { time: 5000 });
 }
 
 function handleCancel() {
