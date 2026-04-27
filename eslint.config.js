@@ -4,7 +4,7 @@ export default [
   js.configs.recommended,
   {
     languageOptions: {
-      ecmaVersion: 2020,
+      ecmaVersion: 2021,
       sourceType: 'module',
       globals: {
         browser: 'readonly',
@@ -16,7 +16,6 @@ export default [
         setTimeout: 'readonly',
         MutationObserver: 'readonly',
         HTMLFormElement: 'readonly',
-        importScripts: 'readonly',
         setInterval: 'readonly',
         clearInterval: 'readonly',
       },
@@ -34,8 +33,5 @@ export default [
       quotes: ['error', 'single'],
       semi: ['error', 'always'],
     },
-  },
-  {
-    ignores: ['browser-polyfill.min.js'],
   },
 ];

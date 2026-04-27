@@ -1,4 +1,3 @@
-/* global chrome */
 // We can only access the TABs DOM with this script.
 // It will get the credentials via message passing from the popup
 // It is also responsible to copy strings to the clipboard
@@ -207,7 +206,7 @@ async function showMatchesPopupIframe(matches) {
     iframe = document.createElement('iframe');
     iframe.id = 'multiple-matches-popup';
 
-    iframe.src = chrome.runtime.getURL('chooseMatch.html');
+    iframe.src = browser.runtime.getURL('chooseMatch.html');
 
     iframe.style.position = 'fixed';
     iframe.style.top = '20px';
@@ -240,7 +239,7 @@ window.addEventListener('message', (event) => {
   }
 });
 
-chrome.runtime.onMessage.addListener((request) => {
+browser.runtime.onMessage.addListener((request) => {
   if (request.type === 'show_matches_popup_iframe') {
     const hasUsername = !!findUsernameNodeIn(document, true);
     const hasPassword = !!findPasswordInput();

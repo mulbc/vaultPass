@@ -1,5 +1,3 @@
-/* global chrome */
-
 window.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'popup_matches') {
     populateMatches(event.data.matches);
@@ -42,7 +40,7 @@ function populateMatches(matches) {
     );
 
     btn.addEventListener('click', () => {
-      chrome.runtime.sendMessage({
+      browser.runtime.sendMessage({
         message: 'fill_creds',
         username: match.username,
         password: match.password,

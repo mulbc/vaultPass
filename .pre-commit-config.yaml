@@ -13,7 +13,3 @@ repos:
     rev: v10.2.1 # Use the sha / tag you want to point at
     hooks:
       - id: eslint
-        exclude: >
-          (?x)^(
-              browser-polyfill.min.js
-          )$

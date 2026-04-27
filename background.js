@@ -1,16 +1,9 @@
-/* global URL */
-importScripts('browser-polyfill.min.js');
-
-// Manifest V3 uses browser.action instead of browserAction
-if (!browser.browserAction) {
-  browser.browserAction = browser.action;
-}
+/* global URL, importScripts */
+importScripts('compat.js');
 
 const idealTokenTTL = '24h';
 const tokenCheckAlarm = 'tokenCheck';
 const tokenRenewAlarm = 'tokenRenew';
-
-// Manifest V3 uses browser.action instead of browserAction
 
 setupTokenAutoRenew(1800);
 refreshTokenTimer();
@@ -155,7 +148,7 @@ async function autoFillSecrets(message, sender) {
     }
   }
   if (loginCount > 0) {
-    browser.browserAction.setBadgeText({ text: '*', tabId: sender.tab.id });
+    browser.action.setBadgeText({ text: '*', tabId: sender.tab.id });
   }
 
   // If there is only one match, fill the credentials, otherwise prompt the user
@@ -210,11 +203,11 @@ async function renewToken(force = false) {
         );
       }
 
-      await browser.browserAction.setBadgeBackgroundColor({ color: '#1c98ed' });
+      await browser.action.setBadgeBackgroundColor({ color: '#1c98ed' });
     } catch (e) {
       console.log(e);
-      await browser.browserAction.setBadgeBackgroundColor({ color: '#FF0000' });
-      await browser.browserAction.setBadgeText({ text: '!' });
+      await browser.action.setBadgeBackgroundColor({ color: '#FF0000' });
+      await browser.action.setBadgeText({ text: '!' });
 
       refreshTokenTimer();
     }

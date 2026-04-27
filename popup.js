@@ -117,12 +117,12 @@ async function querySecrets(searchString, manualSearch) {
     await Promise.all(promises);
 
     if (matches > 0) {
-      browser.browserAction.setBadgeText({
+      browser.action.setBadgeText({
         text: `${matches}`,
         tabId: currentTabId,
       });
     } else {
-      browser.browserAction.setBadgeText({ text: '', tabId: currentTabId });
+      browser.action.setBadgeText({ text: '', tabId: currentTabId });
       if (!manualSearch) {
         notify.info('No matching key found for this page.', {
           removeOption: false,
@@ -134,7 +134,7 @@ async function querySecrets(searchString, manualSearch) {
       }
     }
   } catch (err) {
-    browser.browserAction.setBadgeText({ text: '', tabId: currentTabId });
+    browser.action.setBadgeText({ text: '', tabId: currentTabId });
     notify.clear().error(err.message);
   }
 }

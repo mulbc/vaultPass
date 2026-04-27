@@ -1,5 +1,4 @@
 /* eslint-disable no-unused-vars */
-/* global chrome */
 
 function storePathComponents(storePath) {
   let path = 'secret/vaultPass';
@@ -15,10 +14,6 @@ function storePathComponents(storePath) {
     root: storeRoot,
     subPath: storeSubPath,
   };
-}
-
-if (!browser.browserAction) {
-  browser.browserAction = chrome.browserAction ?? chrome.action;
 }
 
 async function copyStringToClipboard(string) {
