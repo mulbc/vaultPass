@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -ex
+
 # This starts the dev Vault environment using Docker / Podman
 # This will enable the userpass auth module with the mitchellh user with password foo
 
@@ -8,9 +10,9 @@ GIT_ROOT=$(git rev-parse --show-toplevel)
 docker pod rm -f vaultpass-dev || true
 
 docker run \
-    --cap-add=IPC_LOCK \
     --detach \
     --env 'VAULT_DEV_ROOT_TOKEN_ID=myroot' \
+    --env 'SKIP_SETCAP=true' \
     --name=dev-vault \
     --publish 8200:8200/tcp \
     --publish 10389:10389 \
